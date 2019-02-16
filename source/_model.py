@@ -5,6 +5,8 @@ import torch.nn.functional as F
 class Q_net(nn.Module):
     def __init__(self, input_size=784, hidden_size=1000, z_size=2, n_classes=10):
         super(Q_net, self).__init__()
+        self.input_size = input_size
+
         self.lin1 = nn.Linear(input_size, hidden_size)
         self.lin2 = nn.Linear(hidden_size, hidden_size)
         # gaussian encoding (z)
