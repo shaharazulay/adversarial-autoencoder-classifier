@@ -1,16 +1,12 @@
-from __future__ import print_function
-import pickle
 import numpy as np
 import torch
-from torchvision import datasets, transforms
+from torchvision import datasets
 
-from sub import subMNIST
+from _data_utils import MNISTSlice, default_transform
 
-transform = transforms.Compose([transforms.ToTensor(),
-                                transforms.Normalize((0.1307,), (0.3081,))])
 
-trainset_original = datasets.MNIST('../data', train=True, download=True,
-                                   transform=transform)
+trainset_original = datasets.MNIST(
+    '../data', train=True, download=True, transform=default_transform)
 
 train_label_index = []
 valid_label_index = []
@@ -27,22 +23,26 @@ trainset_label_np = trainset_original.train_labels.numpy()
 train_data_sub = torch.from_numpy(trainset_np[train_label_index])
 train_labels_sub = torch.from_numpy(trainset_label_np[train_label_index])
 
-trainset_new = subMNIST(root='./../data', train=True, download=True, transform=transform, k=3000)
-trainset_new.train_data = train_data_sub.clone()
-trainset_new.train_labels = train_labels_sub.clone()
+trainset_new = MNISTSlice(
+    root='./../data', data=train_data_sub, labels=train_labels_sub, train=True)
+# trainset_new.train_data = train_data_sub.clone()
+# trainset_new.train_labels = train_labels_sub.clone()
 
-pickle.dump(trainset_new, open("./../data/train_labeled.p", "wb"))
+trainset_new.dump("./../data/train_labeled.p")
+#pickle.dump(trainset_new, open("./../data/train_labeled.p", "wb"))
 
 validset_np = trainset_original.train_data.numpy()
 validset_label_np = trainset_original.train_labels.numpy()
 valid_data_sub = torch.from_numpy(validset_np[valid_label_index])
 valid_labels_sub = torch.from_numpy(validset_label_np[valid_label_index])
 
-validset = subMNIST(root='./../data', train=False, download=True, transform=transform, k=10000)
-validset.test_data = valid_data_sub.clone()
-validset.test_labels = valid_labels_sub.clone()
+validset = MNISTSlice(
+    root='./../data', data=valid_data_sub, labels=valid_labels_sub, train=False)
+# validset.test_data = valid_data_sub.clone()
+# validset.test_labels = valid_labels_sub.clone()
 
-pickle.dump(validset, open("./../data/validation.p", "wb"))
+validset.dump("./../data/validation.p")
+# pickle.dump(validset, open("./../data/validation.p", "wb"))
 
 train_unlabel_index = []
 for i in range(60000):
@@ -54,12 +54,13 @@ for i in range(60000):
 trainset_np = trainset_original.train_data.numpy()
 trainset_label_np = trainset_original.train_labels.numpy()
 train_data_sub_unl = torch.from_numpy(trainset_np[train_unlabel_index])
-train_labels_sub_unl = torch.from_numpy(trainset_label_np[train_unlabel_index])
+#train_labels_sub_unl = torch.from_numpy(trainset_label_np[train_unlabel_index])
+train_labels_sub_unl = torch.from_numpy(np.array([-1] * len(train_unlabel_index)))
+trainset_new_unl = MNISTSlice(
+    root='./../data', data=train_data_sub_unl, labels=train_labels_sub_unl, train=True)
+# trainset_new_unl.train_data = train_data_sub_unl.clone()
+# trainset_new_unl.train_labels = None      # Unlabeled
 
-trainset_new_unl = subMNIST(root='./../data', train=True, download=True, transform=transform, k=47000)
-trainset_new_unl.train_data = train_data_sub_unl.clone()
-trainset_new_unl.train_labels = None      # Unlabeled
+trainset_new_unl.dump("./../data/train_unlabeled.p")
 
-trainset_new_unl.train_labels
-
-pickle.dump(trainset_new_unl, open("./../data/train_unlabeled.p", "wb"))
+#pickle.dump(trainset_new_unl, open("./../data/train_unlabeled.p", "wb"))

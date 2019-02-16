@@ -9,6 +9,10 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import matplotlib.pyplot as plt
+
+from _model import Q_net, P_net, D_net_cat, D_net_gauss
+
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch semi-supervised MNIST')
@@ -28,16 +32,16 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 n_classes = 10
 z_dim = 2
 X_dim = 784
-y_dim = 10
+# y_dim = 10
 train_batch_size = args.batch_size
 valid_batch_size = args.batch_size
-N = 1000
+# N = 1000
 epochs = args.epochs
 
-params = {'n_classes': n_classes, 'z_dim': z_dim, 'X_dim': X_dim,
-          'y_dim': y_dim, 'train_batch_size': train_batch_size,
-          'valid_batch_size': valid_batch_size, 'N': N, 'epochs': epochs,
-          'cuda': cuda}
+# params = {'n_classes': n_classes, 'z_dim': z_dim, 'X_dim': X_dim,
+#           'y_dim': y_dim, 'train_batch_size': train_batch_size,
+#           'valid_batch_size': valid_batch_size, 'N': N, 'epochs': epochs,
+#           'cuda': cuda}
 
 
 ##################################
@@ -47,8 +51,9 @@ def load_data(data_path='../data/'):
     print('loading data!')
     trainset_labeled = pickle.load(open(data_path + "train_labeled.p", "rb"))
     trainset_unlabeled = pickle.load(open(data_path + "train_unlabeled.p", "rb"))
-    # Set -1 as labels for unlabeled data
-    trainset_unlabeled.train_labels = torch.from_numpy(np.array([-1] * 47000))
+
+    # # Set -1 as labels for unlabeled data
+    # trainset_unlabeled.train_labels = torch.from_numpy(np.array([-1] * 47000))
     validset = pickle.load(open(data_path + "validation.p", "rb"))
 
     train_labeled_loader = torch.utils.data.DataLoader(trainset_labeled,
@@ -61,84 +66,85 @@ def load_data(data_path='../data/'):
 
     valid_loader = torch.utils.data.DataLoader(validset, batch_size=valid_batch_size, shuffle=True)
 
+    print "DATSET SIZES: ", len(trainset_labeled), len(trainset_unlabeled), len(validset)
     return train_labeled_loader, train_unlabeled_loader, valid_loader
 
 
 ##################################
 # Define Networks
 ##################################
-# Encoder
-class Q_net(nn.Module):
-    def __init__(self):
-        super(Q_net, self).__init__()
-        self.lin1 = nn.Linear(X_dim, N)
-        self.lin2 = nn.Linear(N, N)
-        # Gaussian code (z)
-        self.lin3gauss = nn.Linear(N, z_dim)
-        # Categorical code (y)
-        self.lin3cat = nn.Linear(N, n_classes)
-
-    def forward(self, x):
-        x = F.dropout(self.lin1(x), p=0.25, training=self.training)
-        x = F.relu(x)
-        x = F.dropout(self.lin2(x), p=0.25, training=self.training)
-        x = F.relu(x)
-        xgauss = self.lin3gauss(x)
-        xcat = F.softmax(self.lin3cat(x))
-
-        return xcat, xgauss
-
-
-# Decoder
-class P_net(nn.Module):
-    def __init__(self):
-        super(P_net, self).__init__()
-        self.lin1 = nn.Linear(z_dim + n_classes, N)
-        self.lin2 = nn.Linear(N, N)
-        self.lin3 = nn.Linear(N, X_dim)
-
-    def forward(self, x):
-        x = self.lin1(x)
-        x = F.dropout(x, p=0.25, training=self.training)
-        x = F.relu(x)
-        x = self.lin2(x)
-        x = F.dropout(x, p=0.25, training=self.training)
-        x = self.lin3(x)
-        return F.sigmoid(x)
-
-
-# Discriminator networks
-class D_net_cat(nn.Module):
-    def __init__(self):
-        super(D_net_cat, self).__init__()
-        self.lin1 = nn.Linear(n_classes, N)
-        self.lin2 = nn.Linear(N, N)
-        self.lin3 = nn.Linear(N, 1)
-
-    def forward(self, x):
-        x = self.lin1(x)
-        x = F.relu(x)
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.lin2(x)
-        x = F.relu(x)
-        x = self.lin3(x)
-        return F.sigmoid(x)
-
-
-class D_net_gauss(nn.Module):
-    def __init__(self):
-        super(D_net_gauss, self).__init__()
-        self.lin1 = nn.Linear(z_dim, N)
-        self.lin2 = nn.Linear(N, N)
-        self.lin3 = nn.Linear(N, 1)
-
-    def forward(self, x):
-        x = F.dropout(self.lin1(x), p=0.2, training=self.training)
-        x = F.relu(x)
-        x = F.dropout(self.lin2(x), p=0.2, training=self.training)
-        x = F.relu(x)
-
-        return F.sigmoid(self.lin3(x))
+# # Encoder
+# class Q_net(nn.Module):
+#     def __init__(self):
+#         super(Q_net, self).__init__()
+#         self.lin1 = nn.Linear(X_dim, N)
+#         self.lin2 = nn.Linear(N, N)
+#         # Gaussian code (z)
+#         self.lin3gauss = nn.Linear(N, z_dim)
+#         # Categorical code (y)
+#         self.lin3cat = nn.Linear(N, n_classes)
+#
+#     def forward(self, x):
+#         x = F.dropout(self.lin1(x), p=0.25, training=self.training)
+#         x = F.relu(x)
+#         x = F.dropout(self.lin2(x), p=0.25, training=self.training)
+#         x = F.relu(x)
+#         xgauss = self.lin3gauss(x)
+#         xcat = F.softmax(self.lin3cat(x))
+#
+#         return xcat, xgauss
+#
+#
+# # Decoder
+# class P_net(nn.Module):
+#     def __init__(self):
+#         super(P_net, self).__init__()
+#         self.lin1 = nn.Linear(z_dim + n_classes, N)
+#         self.lin2 = nn.Linear(N, N)
+#         self.lin3 = nn.Linear(N, X_dim)
+#
+#     def forward(self, x):
+#         x = self.lin1(x)
+#         x = F.dropout(x, p=0.25, training=self.training)
+#         x = F.relu(x)
+#         x = self.lin2(x)
+#         x = F.dropout(x, p=0.25, training=self.training)
+#         x = self.lin3(x)
+#         return F.sigmoid(x)
+#
+#
+# # Discriminator networks
+# class D_net_cat(nn.Module):
+#     def __init__(self):
+#         super(D_net_cat, self).__init__()
+#         self.lin1 = nn.Linear(n_classes, N)
+#         self.lin2 = nn.Linear(N, N)
+#         self.lin3 = nn.Linear(N, 1)
+#
+#     def forward(self, x):
+#         x = self.lin1(x)
+#         x = F.relu(x)
+#         x = F.dropout(x, p=0.2, training=self.training)
+#         x = self.lin2(x)
+#         x = F.relu(x)
+#         x = self.lin3(x)
+#         return F.sigmoid(x)
+#
+#
+# class D_net_gauss(nn.Module):
+#     def __init__(self):
+#         super(D_net_gauss, self).__init__()
+#         self.lin1 = nn.Linear(z_dim, N)
+#         self.lin2 = nn.Linear(N, N)
+#         self.lin3 = nn.Linear(N, 1)
+#
+#     def forward(self, x):
+#         x = F.dropout(self.lin1(x), p=0.2, training=self.training)
+#         x = F.relu(x)
+#         x = F.dropout(self.lin2(x), p=0.2, training=self.training)
+#         x = F.relu(x)
+#
+#         return F.sigmoid(self.lin3(x))
 
 
 ####################
@@ -167,72 +173,83 @@ def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss):
                                                                                                       recon_loss.data[0]))
 
 
-def create_latent(Q, loader):
-    '''
-    Creates the latent representation for the samples in loader
-    return:
-        z_values: numpy array with the latent representations
-        labels: the labels corresponding to the latent representations
-    '''
+# def create_latent(Q, loader):
+#     '''
+#     Creates the latent representation for the samples in loader
+#     return:
+#         z_values: numpy array with the latent representations
+#         labels: the labels corresponding to the latent representations
+#     '''
+#     Q.eval()
+#     labels = []
+#
+#     for batch_idx, (X, target) in enumerate(loader):
+#
+#         X = X * 0.3081 + 0.1307
+#         # X.resize_(loader.batch_size, X_dim)
+#         X, target = Variable(X), Variable(target)
+#         labels.extend(target.data.tolist())
+#         if cuda:
+#             X, target = X.cuda(), target.cuda()
+#         # Reconstruction phase
+#         z_sample = Q(X)
+#         if batch_idx > 0:
+#             z_values = np.concatenate((z_values, np.array(z_sample.data.tolist())))
+#         else:
+#             z_values = np.array(z_sample.data.tolist())
+#     labels = np.array(labels)
+#
+#     return z_values, labels
+
+# def get_categorical(labels, n_classes=10):
+#     cat = np.array(labels.data.tolist())
+#     cat = np.eye(n_classes)[cat].astype('float32')
+#     cat = torch.from_numpy(cat)
+#     return Variable(cat)
+
+
+def predict_labels(Q, X):
     Q.eval()
-    labels = []
 
-    for batch_idx, (X, target) in enumerate(loader):
-
-        X = X * 0.3081 + 0.1307
-        # X.resize_(loader.batch_size, X_dim)
-        X, target = Variable(X), Variable(target)
-        labels.extend(target.data.tolist())
-        if cuda:
-            X, target = X.cuda(), target.cuda()
-        # Reconstruction phase
-        z_sample = Q(X)
-        if batch_idx > 0:
-            z_values = np.concatenate((z_values, np.array(z_sample.data.tolist())))
-        else:
-            z_values = np.array(z_sample.data.tolist())
-    labels = np.array(labels)
-
-    return z_values, labels
-
-
-def get_categorical(labels, n_classes=10):
-    cat = np.array(labels.data.tolist())
-    cat = np.eye(n_classes)[cat].astype('float32')
-    cat = torch.from_numpy(cat)
-    return Variable(cat)
-
+    latent_y = Q(X)[0]
+    pred_labels = torch.argmax(latent_y, dim=1)
+    return pred_labels
 
 def classification_accuracy(Q, data_loader):
-    Q.eval()
-    labels = []
-    test_loss = 0
+    #labels = []
+    #test_loss = 0
     correct = 0
+    N = len(data_loader.dataset)
 
     for batch_idx, (X, target) in enumerate(data_loader):
-        X = X * 0.3081 + 0.1307
+        #X = X * 0.3081 + 0.1307
         X.resize_(data_loader.batch_size, X_dim)
         X, target = Variable(X), Variable(target)
         if cuda:
             X, target = X.cuda(), target.cuda()
 
-        labels.extend(target.data.tolist())
-        # Reconstruction phase
-        output = Q(X)[0]
-
-        test_loss += F.nll_loss(output, target).data[0]
-
-        pred = output.data.max(1)[1]
+        #labels.extend(target.data.tolist())
+        # encoding phase
+        pred = predict_labels(Q, X)
         correct += pred.eq(target.data).cpu().sum()
 
-    test_loss /= len(data_loader)
-    return 100. * correct / len(data_loader.dataset)
+        # output = Q(X)[0]
+        # pred = torch.argmax(output, dim=1)  #output.data.max(1)[1]
+        #test_loss += F.nll_loss(output, target).data[0]
+
+    #test_loss /= len(data_loader)
+    return 100. * correct / N
 
 
 ####################
 # Train procedure
 ####################
-def train(P, Q, D_cat, D_gauss, P_decoder, Q_encoder, Q_semi_supervised, Q_generator, D_cat_solver, D_gauss_solver, train_labeled_loader, train_unlabeled_loader):
+def train(
+    P, Q, D_cat, D_gauss,
+    P_decoder_optim, Q_encoder_optim,
+    Q_classifier_optim,
+    Q_regularization_optim, D_cat_optim, D_gauss_optim,
+    train_labeled_loader, train_unlabeled_loader):
     '''
     Train procedure for one epoch.
     '''
@@ -258,7 +275,7 @@ def train(P, Q, D_cat, D_gauss, P_decoder, Q_encoder, Q_semi_supervised, Q_gener
                 labeled = True
 
             # Load batch and normalize samples to be between 0 and 1
-            X = X * 0.3081 + 0.1307
+            #X = X * 0.3081 + 0.1307
             X.resize_(train_batch_size, X_dim)
 
             X, target = Variable(X), Variable(target)
@@ -281,8 +298,8 @@ def train(P, Q, D_cat, D_gauss, P_decoder, Q_encoder, Q_semi_supervised, Q_gener
                 recon_loss = F.binary_cross_entropy(X_sample + TINY, X.resize(train_batch_size, X_dim) + TINY)
                 recon_loss = recon_loss
                 recon_loss.backward()
-                P_decoder.step()
-                Q_encoder.step()
+                P_decoder_optim.step()
+                Q_encoder_optim.step()
 
                 P.zero_grad()
                 Q.zero_grad()
@@ -314,8 +331,8 @@ def train(P, Q, D_cat, D_gauss, P_decoder, Q_encoder, Q_semi_supervised, Q_gener
                 D_loss = D_loss
 
                 D_loss.backward()
-                D_cat_solver.step()
-                D_gauss_solver.step()
+                D_cat_optim.step()
+                D_gauss_optim.step()
 
                 P.zero_grad()
                 Q.zero_grad()
@@ -332,7 +349,7 @@ def train(P, Q, D_cat, D_gauss, P_decoder, Q_encoder, Q_semi_supervised, Q_gener
                 G_loss = - torch.mean(torch.log(D_fake_cat + TINY)) - torch.mean(torch.log(D_fake_gauss + TINY))
                 G_loss = G_loss
                 G_loss.backward()
-                Q_generator.step()
+                Q_regularization_optim.step()
 
                 P.zero_grad()
                 Q.zero_grad()
@@ -346,7 +363,7 @@ def train(P, Q, D_cat, D_gauss, P_decoder, Q_encoder, Q_semi_supervised, Q_gener
                 pred, _ = Q(X)
                 class_loss = F.cross_entropy(pred, target)
                 class_loss.backward()
-                Q_semi_supervised.step()
+                Q_classifier_optim.step()
 
                 P.zero_grad()
                 Q.zero_grad()
@@ -371,29 +388,29 @@ def generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader):
         D_cat = D_net_cat()
 
     # Set learning rates
-    gen_lr = 0.0006
-    semi_lr = 0.001
-    reg_lr = 0.0008
+    auto_encoder_lr = 0.0006
+    regularization_lr = 0.0008
+    classifier_lr = 0.001
 
     # Set optimizators
-    P_decoder = optim.Adam(P.parameters(), lr=gen_lr)
-    Q_encoder = optim.Adam(Q.parameters(), lr=gen_lr)
+    P_decoder_optim = optim.Adam(P.parameters(), lr=auto_encoder_lr)
+    Q_encoder_optim = optim.Adam(Q.parameters(), lr=auto_encoder_lr)
 
-    Q_semi_supervised = optim.Adam(Q.parameters(), lr=semi_lr)
+    Q_regularization_optim = optim.Adam(Q.parameters(), lr=regularization_lr)
+    D_gauss_optim = optim.Adam(D_gauss.parameters(), lr=regularization_lr)
+    D_cat_optim = optim.Adam(D_cat.parameters(), lr=regularization_lr)
 
-    Q_generator = optim.Adam(Q.parameters(), lr=reg_lr)
-    D_gauss_solver = optim.Adam(D_gauss.parameters(), lr=reg_lr)
-    D_cat_solver = optim.Adam(D_cat.parameters(), lr=reg_lr)
+    Q_classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
 
     start = time.time()
     for epoch in range(epochs):
-        D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss = train(P, Q, D_cat,
-                                                                         D_gauss, P_decoder,
-                                                                         Q_encoder, Q_semi_supervised,
-                                                                         Q_generator,
-                                                                         D_cat_solver, D_gauss_solver,
-                                                                         train_labeled_loader,
-                                                                         train_unlabeled_loader)
+        D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss = train(
+            P, Q, D_cat, D_gauss,
+            P_decoder_optim, Q_encoder_optim,
+            Q_classifier_optim,
+            Q_regularization_optim, D_cat_optim, D_gauss_optim,
+            train_labeled_loader, train_unlabeled_loader)
+
         if epoch % 10 == 0:
             train_acc = classification_accuracy(Q, train_labeled_loader)
             val_acc = classification_accuracy(Q, valid_loader)
@@ -410,3 +427,16 @@ def generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader):
 if __name__ == '__main__':
     train_labeled_loader, train_unlabeled_loader, valid_loader = load_data()
     Q, P = generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader)
+
+    ## show some images
+    for batch_idx, (X, target) in enumerate(valid_loader):
+        X.resize_(valid_loader.batch_size, X_dim)
+        X, target = Variable(X), Variable(target)
+        if cuda:
+            X, target = X.cuda(), target.cuda()
+        pred = predict_labels(Q, X)
+
+        plt.figure()
+        plt.imshow(X[:784].resize_(28 ,28), cmap='gray')
+        plt.title('Orig: %s, Pred: %s' % (target[0], pred[0]))
+        plt.show()
