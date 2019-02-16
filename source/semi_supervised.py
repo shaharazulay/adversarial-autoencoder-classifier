@@ -4,15 +4,15 @@ import torch
 import pickle
 import numpy as np
 import itertools
-from viz import *
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
+from _data_utils import MNISTSlice
 from _model import Q_net, P_net, D_net_cat, D_net_gauss
-
+from _train_utils import *
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch semi-supervised MNIST')
@@ -38,207 +38,33 @@ valid_batch_size = args.batch_size
 # N = 1000
 epochs = args.epochs
 
-# params = {'n_classes': n_classes, 'z_dim': z_dim, 'X_dim': X_dim,
-#           'y_dim': y_dim, 'train_batch_size': train_batch_size,
-#           'valid_batch_size': valid_batch_size, 'N': N, 'epochs': epochs,
-#           'cuda': cuda}
-
-
 ##################################
 # Load data and create Data loaders
 ##################################
 def load_data(data_path='../data/'):
     print('loading data!')
-    trainset_labeled = pickle.load(open(data_path + "train_labeled.p", "rb"))
-    trainset_unlabeled = pickle.load(open(data_path + "train_unlabeled.p", "rb"))
 
-    # # Set -1 as labels for unlabeled data
-    # trainset_unlabeled.train_labels = torch.from_numpy(np.array([-1] * 47000))
-    validset = pickle.load(open(data_path + "validation.p", "rb"))
+    trainset_labeled = MNISTSlice.load(data_path + 'train_labeled.p')
+    trainset_unlabeled = MNISTSlice.load(data_path + 'train_unlabeled.p')
+    validset = MNISTSlice.load(data_path + 'validation.p')
 
-    train_labeled_loader = torch.utils.data.DataLoader(trainset_labeled,
-                                                       batch_size=train_batch_size,
-                                                       shuffle=True, **kwargs)
+    train_labeled_loader = torch.utils.data.DataLoader(
+        trainset_labeled,
+        batch_size=train_batch_size,
+        shuffle=True,
+        **kwargs)
 
-    train_unlabeled_loader = torch.utils.data.DataLoader(trainset_unlabeled,
-                                                         batch_size=train_batch_size,
-                                                         shuffle=True, **kwargs)
+    train_unlabeled_loader = torch.utils.data.DataLoader(
+        trainset_unlabeled,
+        batch_size=train_batch_size,
+        shuffle=True,
+        **kwargs)
 
-    valid_loader = torch.utils.data.DataLoader(validset, batch_size=valid_batch_size, shuffle=True)
+    valid_loader = torch.utils.data.DataLoader(
+        validset, batch_size=valid_batch_size, shuffle=True)
 
-    print "DATSET SIZES: ", len(trainset_labeled), len(trainset_unlabeled), len(validset)
+    print "DATASET SIZES: ", len(trainset_labeled), len(trainset_unlabeled), len(validset)
     return train_labeled_loader, train_unlabeled_loader, valid_loader
-
-
-##################################
-# Define Networks
-##################################
-# # Encoder
-# class Q_net(nn.Module):
-#     def __init__(self):
-#         super(Q_net, self).__init__()
-#         self.lin1 = nn.Linear(X_dim, N)
-#         self.lin2 = nn.Linear(N, N)
-#         # Gaussian code (z)
-#         self.lin3gauss = nn.Linear(N, z_dim)
-#         # Categorical code (y)
-#         self.lin3cat = nn.Linear(N, n_classes)
-#
-#     def forward(self, x):
-#         x = F.dropout(self.lin1(x), p=0.25, training=self.training)
-#         x = F.relu(x)
-#         x = F.dropout(self.lin2(x), p=0.25, training=self.training)
-#         x = F.relu(x)
-#         xgauss = self.lin3gauss(x)
-#         xcat = F.softmax(self.lin3cat(x))
-#
-#         return xcat, xgauss
-#
-#
-# # Decoder
-# class P_net(nn.Module):
-#     def __init__(self):
-#         super(P_net, self).__init__()
-#         self.lin1 = nn.Linear(z_dim + n_classes, N)
-#         self.lin2 = nn.Linear(N, N)
-#         self.lin3 = nn.Linear(N, X_dim)
-#
-#     def forward(self, x):
-#         x = self.lin1(x)
-#         x = F.dropout(x, p=0.25, training=self.training)
-#         x = F.relu(x)
-#         x = self.lin2(x)
-#         x = F.dropout(x, p=0.25, training=self.training)
-#         x = self.lin3(x)
-#         return F.sigmoid(x)
-#
-#
-# # Discriminator networks
-# class D_net_cat(nn.Module):
-#     def __init__(self):
-#         super(D_net_cat, self).__init__()
-#         self.lin1 = nn.Linear(n_classes, N)
-#         self.lin2 = nn.Linear(N, N)
-#         self.lin3 = nn.Linear(N, 1)
-#
-#     def forward(self, x):
-#         x = self.lin1(x)
-#         x = F.relu(x)
-#         x = F.dropout(x, p=0.2, training=self.training)
-#         x = self.lin2(x)
-#         x = F.relu(x)
-#         x = self.lin3(x)
-#         return F.sigmoid(x)
-#
-#
-# class D_net_gauss(nn.Module):
-#     def __init__(self):
-#         super(D_net_gauss, self).__init__()
-#         self.lin1 = nn.Linear(z_dim, N)
-#         self.lin2 = nn.Linear(N, N)
-#         self.lin3 = nn.Linear(N, 1)
-#
-#     def forward(self, x):
-#         x = F.dropout(self.lin1(x), p=0.2, training=self.training)
-#         x = F.relu(x)
-#         x = F.dropout(self.lin2(x), p=0.2, training=self.training)
-#         x = F.relu(x)
-#
-#         return F.sigmoid(self.lin3(x))
-
-
-####################
-# Utility functions
-####################
-def sample_categorical(batch_size, n_classes=10):
-    '''
-     Sample from a categorical distribution
-     of size batch_size and # of classes n_classes
-     return: torch.autograd.Variable with the sample
-    '''
-    cat = np.random.randint(0, 10, batch_size)
-    cat = np.eye(n_classes)[cat].astype('float32')
-    cat = torch.from_numpy(cat)
-    return Variable(cat)
-
-
-def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss):
-    '''
-    Print loss
-    '''
-    print('Epoch-{}; D_loss_cat: {:.4}; D_loss_gauss: {:.4}; G_loss: {:.4}; recon_loss: {:.4}'.format(epoch,
-                                                                                                      D_loss_cat.data[0],
-                                                                                                      D_loss_gauss.data[0],
-                                                                                                      G_loss.data[0],
-                                                                                                      recon_loss.data[0]))
-
-
-# def create_latent(Q, loader):
-#     '''
-#     Creates the latent representation for the samples in loader
-#     return:
-#         z_values: numpy array with the latent representations
-#         labels: the labels corresponding to the latent representations
-#     '''
-#     Q.eval()
-#     labels = []
-#
-#     for batch_idx, (X, target) in enumerate(loader):
-#
-#         X = X * 0.3081 + 0.1307
-#         # X.resize_(loader.batch_size, X_dim)
-#         X, target = Variable(X), Variable(target)
-#         labels.extend(target.data.tolist())
-#         if cuda:
-#             X, target = X.cuda(), target.cuda()
-#         # Reconstruction phase
-#         z_sample = Q(X)
-#         if batch_idx > 0:
-#             z_values = np.concatenate((z_values, np.array(z_sample.data.tolist())))
-#         else:
-#             z_values = np.array(z_sample.data.tolist())
-#     labels = np.array(labels)
-#
-#     return z_values, labels
-
-# def get_categorical(labels, n_classes=10):
-#     cat = np.array(labels.data.tolist())
-#     cat = np.eye(n_classes)[cat].astype('float32')
-#     cat = torch.from_numpy(cat)
-#     return Variable(cat)
-
-
-def predict_labels(Q, X):
-    Q.eval()
-
-    latent_y = Q(X)[0]
-    pred_labels = torch.argmax(latent_y, dim=1)
-    return pred_labels
-
-def classification_accuracy(Q, data_loader):
-    #labels = []
-    #test_loss = 0
-    correct = 0
-    N = len(data_loader.dataset)
-
-    for batch_idx, (X, target) in enumerate(data_loader):
-        #X = X * 0.3081 + 0.1307
-        X.resize_(data_loader.batch_size, X_dim)
-        X, target = Variable(X), Variable(target)
-        if cuda:
-            X, target = X.cuda(), target.cuda()
-
-        #labels.extend(target.data.tolist())
-        # encoding phase
-        pred = predict_labels(Q, X)
-        correct += pred.eq(target.data).cpu().sum()
-
-        # output = Q(X)[0]
-        # pred = torch.argmax(output, dim=1)  #output.data.max(1)[1]
-        #test_loss += F.nll_loss(output, target).data[0]
-
-    #test_loss /= len(data_loader)
-    return 100. * correct / N
 
 
 ####################
