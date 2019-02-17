@@ -10,7 +10,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
-from _data_utils import MNISTSlice
+from _data_utils import MNISTSlice, load_data
 from _model import Q_net, P_net, D_net_cat, D_net_gauss
 from _train_utils import *
 
@@ -33,38 +33,38 @@ n_classes = 10
 z_dim = 2
 X_dim = 784
 # y_dim = 10
-train_batch_size = args.batch_size
-valid_batch_size = args.batch_size
+# train_batch_size = args.batch_size
+# valid_batch_size = args.batch_size
 # N = 1000
 epochs = args.epochs
 
 ##################################
 # Load data and create Data loaders
 ##################################
-def load_data(data_path='../data/'):
-    print('loading data!')
-
-    trainset_labeled = MNISTSlice.load(data_path + 'train_labeled.p')
-    trainset_unlabeled = MNISTSlice.load(data_path + 'train_unlabeled.p')
-    validset = MNISTSlice.load(data_path + 'validation.p')
-
-    train_labeled_loader = torch.utils.data.DataLoader(
-        trainset_labeled,
-        batch_size=train_batch_size,
-        shuffle=True,
-        **kwargs)
-
-    train_unlabeled_loader = torch.utils.data.DataLoader(
-        trainset_unlabeled,
-        batch_size=train_batch_size,
-        shuffle=True,
-        **kwargs)
-
-    valid_loader = torch.utils.data.DataLoader(
-        validset, batch_size=valid_batch_size, shuffle=True)
-
-    print "DATASET SIZES: ", len(trainset_labeled), len(trainset_unlabeled), len(validset)
-    return train_labeled_loader, train_unlabeled_loader, valid_loader
+# def load_data(data_path='../data/'):
+#     print('loading data!')
+#
+#     trainset_labeled = MNISTSlice.load(data_path + 'train_labeled.p')
+#     trainset_unlabeled = MNISTSlice.load(data_path + 'train_unlabeled.p')
+#     validset = MNISTSlice.load(data_path + 'validation.p')
+#
+#     train_labeled_loader = torch.utils.data.DataLoader(
+#         trainset_labeled,
+#         batch_size=train_batch_size,
+#         shuffle=True,
+#         **kwargs)
+#
+#     train_unlabeled_loader = torch.utils.data.DataLoader(
+#         trainset_unlabeled,
+#         batch_size=train_batch_size,
+#         shuffle=True,
+#         **kwargs)
+#
+#     valid_loader = torch.utils.data.DataLoader(
+#         validset, batch_size=valid_batch_size, shuffle=True)
+#
+#     print "DATASET SIZES: ", len(trainset_labeled), len(trainset_unlabeled), len(validset)
+#     return train_labeled_loader, train_unlabeled_loader, valid_loader
 
 
 ####################
@@ -89,6 +89,7 @@ def train(
     if train_unlabeled_loader is None:
         train_unlabeled_loader = train_labeled_loader
 
+    batch_size = train_labeled_loader.batch_size
     # Loop through the labeled and unlabeled dataset getting one batch of samples from each
     # The batch size has to be a divisor of the size of the dataset or it will return
     # invalid samples
@@ -102,7 +103,7 @@ def train(
 
             # Load batch and normalize samples to be between 0 and 1
             #X = X * 0.3081 + 0.1307
-            X.resize_(train_batch_size, X_dim)
+            X.resize_(batch_size, X_dim)
 
             X, target = Variable(X), Variable(target)
             if cuda:
@@ -118,7 +119,7 @@ def train(
                 z_sample = torch.cat(Q(X), 1)
                 X_sample = P(z_sample)
 
-                recon_loss = F.binary_cross_entropy(X_sample + TINY, X.resize_(train_batch_size, X_dim) + TINY)
+                recon_loss = F.binary_cross_entropy(X_sample + TINY, X.resize_(batch_size, X_dim) + TINY)
                 recon_loss = recon_loss
                 recon_loss.backward()
                 P_decoder_optim.step()
@@ -133,8 +134,8 @@ def train(
                 #######################
                 # Discriminator
                 Q.eval()
-                z_real_cat = sample_categorical(train_batch_size, n_classes=n_classes)
-                z_real_gauss = Variable(torch.randn(train_batch_size, z_dim))
+                z_real_cat = sample_categorical(batch_size, n_classes=n_classes)
+                z_real_gauss = Variable(torch.randn(batch_size, z_dim))
                 if cuda:
                     z_real_cat = z_real_cat.cuda()
                     z_real_gauss = z_real_gauss.cuda()
@@ -241,7 +242,8 @@ def generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader):
 
 
 if __name__ == '__main__':
-    train_labeled_loader, train_unlabeled_loader, valid_loader = load_data()
+    train_labeled_loader, train_unlabeled_loader, valid_loader = load_data(
+        data_path='../data/', batch_size=args.batch_size, **kwargs)
     Q, P = generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader)
 
     ## show some images
