@@ -23,13 +23,13 @@ class _TestCommand(Command):
 
 
 setup(
-    name='traceable_dict',
+    name='adversarial_autoencoder_classifier',
     version='0.0.1',
     author='Shahar Azulay, Rinat Ishak',
     author_email='shahar4@gmail.com',
-    url='https://github.com/shaharazulay/traceable-dict',
+    url='https://github.com/shaharazulay/adversarial-autoencoder-classifier',
     packages=[
-        'traceable_dict'
+        'source'
     ],
     license='bsd',
     description='Traceable Python dictionary',
