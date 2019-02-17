@@ -109,10 +109,7 @@ def train(
                 X, target = X.cuda(), target.cuda()
 
             # Init gradients
-            P.zero_grad()
-            Q.zero_grad()
-            D_cat.zero_grad()
-            D_gauss.zero_grad()
+            zero_grad_all(P, Q, D_cat, D_gauss)
 
             #######################
             # Reconstruction phase
@@ -121,16 +118,15 @@ def train(
                 z_sample = torch.cat(Q(X), 1)
                 X_sample = P(z_sample)
 
-                recon_loss = F.binary_cross_entropy(X_sample + TINY, X.resize(train_batch_size, X_dim) + TINY)
+                recon_loss = F.binary_cross_entropy(X_sample + TINY, X.resize_(train_batch_size, X_dim) + TINY)
                 recon_loss = recon_loss
                 recon_loss.backward()
                 P_decoder_optim.step()
                 Q_encoder_optim.step()
 
-                P.zero_grad()
-                Q.zero_grad()
-                D_cat.zero_grad()
-                D_gauss.zero_grad()
+                # Init gradients
+                zero_grad_all(P, Q, D_cat, D_gauss)
+
                 recon_loss = recon_loss
                 #######################
                 # Regularization phase
@@ -160,10 +156,8 @@ def train(
                 D_cat_optim.step()
                 D_gauss_optim.step()
 
-                P.zero_grad()
-                Q.zero_grad()
-                D_cat.zero_grad()
-                D_gauss.zero_grad()
+                # Init gradients
+                zero_grad_all(P, Q, D_cat, D_gauss)
 
                 # Generator
                 Q.train()
@@ -177,10 +171,8 @@ def train(
                 G_loss.backward()
                 Q_regularization_optim.step()
 
-                P.zero_grad()
-                Q.zero_grad()
-                D_cat.zero_grad()
-                D_gauss.zero_grad()
+                # Init gradients
+                zero_grad_all(P, Q, D_cat, D_gauss)
 
             #######################
             # Semi-supervised phase
@@ -191,10 +183,8 @@ def train(
                 class_loss.backward()
                 Q_classifier_optim.step()
 
-                P.zero_grad()
-                Q.zero_grad()
-                D_cat.zero_grad()
-                D_gauss.zero_grad()
+                # Init gradients
+                zero_grad_all(P, Q, D_cat, D_gauss)
 
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss
 
@@ -241,7 +231,7 @@ def generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader):
             train_acc = classification_accuracy(Q, train_labeled_loader)
             val_acc = classification_accuracy(Q, valid_loader)
             report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss)
-            print('Classification Loss: {:.3}'.format(class_loss.data[0]))
+            print('Classification Loss: {:.3}'.format(class_loss.item()))
             print('Train accuracy: {} %'.format(train_acc))
             print('Validation accuracy: {} %'.format(val_acc))
     end = time.time()
