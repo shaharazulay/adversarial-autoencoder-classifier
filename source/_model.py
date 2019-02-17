@@ -1,5 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import sigmoid
+
 
 # Encoder
 class Q_net(nn.Module):
@@ -20,7 +22,7 @@ class Q_net(nn.Module):
         x = F.dropout(self.lin2(x), p=0.25, training=self.training)
         x = F.relu(x)
         z_gauss = self.lin3_gauss(x)
-        y_cat = F.softmax(self.lin3_cat(x))
+        y_cat = F.softmax(self.lin3_cat(x), dim=1)
 
         return y_cat, z_gauss
 
@@ -40,7 +42,7 @@ class P_net(nn.Module):
         x = self.lin2(x)
         x = F.dropout(x, p=0.25, training=self.training)
         x = self.lin3(x)
-        return F.sigmoid(x)
+        return sigmoid(x)
 
 
 # Discriminator categorial
@@ -58,7 +60,7 @@ class D_net_cat(nn.Module):
         x = self.lin2(x)
         x = F.relu(x)
         x = self.lin3(x)
-        return F.sigmoid(x)
+        return sigmoid(x)
 
 
 # Discriminator gaussian
@@ -74,4 +76,4 @@ class D_net_gauss(nn.Module):
         x = F.relu(x)
         x = F.dropout(self.lin2(x), p=0.2, training=self.training)
         x = F.relu(x)
-        return F.sigmoid(self.lin3(x))
+        return sigmoid(self.lin3(x))
