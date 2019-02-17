@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from _data_utils import MNISTSlice, load_data
 from _model import Q_net, P_net, D_net_cat, D_net_gauss
 from _train_utils import *
+from _visualization import show_predicted_labels
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch semi-supervised MNIST')
@@ -38,56 +39,24 @@ X_dim = 784
 # N = 1000
 epochs = args.epochs
 
-##################################
-# Load data and create Data loaders
-##################################
-# def load_data(data_path='../data/'):
-#     print('loading data!')
-#
-#     trainset_labeled = MNISTSlice.load(data_path + 'train_labeled.p')
-#     trainset_unlabeled = MNISTSlice.load(data_path + 'train_unlabeled.p')
-#     validset = MNISTSlice.load(data_path + 'validation.p')
-#
-#     train_labeled_loader = torch.utils.data.DataLoader(
-#         trainset_labeled,
-#         batch_size=train_batch_size,
-#         shuffle=True,
-#         **kwargs)
-#
-#     train_unlabeled_loader = torch.utils.data.DataLoader(
-#         trainset_unlabeled,
-#         batch_size=train_batch_size,
-#         shuffle=True,
-#         **kwargs)
-#
-#     valid_loader = torch.utils.data.DataLoader(
-#         validset, batch_size=valid_batch_size, shuffle=True)
-#
-#     print "DATASET SIZES: ", len(trainset_labeled), len(trainset_unlabeled), len(validset)
-#     return train_labeled_loader, train_unlabeled_loader, valid_loader
-
-
 ####################
 # Train procedure
 ####################
-def train(
-    P, Q, D_cat, D_gauss,
-    P_decoder_optim, Q_encoder_optim,
-    Q_classifier_optim,
-    Q_regularization_optim, D_cat_optim, D_gauss_optim,
-    train_labeled_loader, train_unlabeled_loader):
+def _train_epoch(
+    models, optimizers, train_labeled_loader, train_unlabeled_loader):
     '''
     Train procedure for one epoch.
     '''
     TINY = 1e-15
-    # Set the networks in train mode (apply dropout when needed)
-    Q.train()
-    P.train()
-    D_cat.train()
-    D_gauss.train()
+    # load models and optimizers
+    P, Q, D_cat, D_gauss = models
+    P_decoder_optim, Q_encoder_optim, Q_classifier_optim, Q_regularization_optim, D_cat_optim, D_gauss_optim = optimizers
 
-    if train_unlabeled_loader is None:
-        train_unlabeled_loader = train_labeled_loader
+    # Set the networks in train mode (apply dropout when needed)
+    train_all(P, Q, D_cat, D_gauss)
+
+    # if train_unlabeled_loader is None:
+    #     train_unlabeled_loader = train_labeled_loader
 
     batch_size = train_labeled_loader.batch_size
     # Loop through the labeled and unlabeled dataset getting one batch of samples from each
@@ -101,8 +70,6 @@ def train(
             else:
                 labeled = True
 
-            # Load batch and normalize samples to be between 0 and 1
-            #X = X * 0.3081 + 0.1307
             X.resize_(batch_size, X_dim)
 
             X, target = Variable(X), Variable(target)
@@ -190,7 +157,7 @@ def train(
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss
 
 
-def generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader):
+def train(train_labeled_loader, train_unlabeled_loader, valid_loader):
     torch.manual_seed(10)
 
     if cuda:
@@ -219,14 +186,17 @@ def generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader):
 
     Q_classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
 
+
+    models = P, Q, D_cat, D_gauss
+    optimizers = P_decoder_optim, Q_encoder_optim, Q_classifier_optim, Q_regularization_optim, D_cat_optim, D_gauss_optim
+
     start = time.time()
     for epoch in range(epochs):
-        D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss = train(
-            P, Q, D_cat, D_gauss,
-            P_decoder_optim, Q_encoder_optim,
-            Q_classifier_optim,
-            Q_regularization_optim, D_cat_optim, D_gauss_optim,
-            train_labeled_loader, train_unlabeled_loader)
+        D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss = _train_epoch(
+            models,
+            optimizers,
+            train_labeled_loader,
+            train_unlabeled_loader)
 
         if epoch % 10 == 0:
             train_acc = classification_accuracy(Q, train_labeled_loader)
@@ -244,17 +214,4 @@ def generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader):
 if __name__ == '__main__':
     train_labeled_loader, train_unlabeled_loader, valid_loader = load_data(
         data_path='../data/', batch_size=args.batch_size, **kwargs)
-    Q, P = generate_model(train_labeled_loader, train_unlabeled_loader, valid_loader)
-
-    ## show some images
-    for batch_idx, (X, target) in enumerate(valid_loader):
-        X.resize_(valid_loader.batch_size, X_dim)
-        X, target = Variable(X), Variable(target)
-        if cuda:
-            X, target = X.cuda(), target.cuda()
-        pred = predict_labels(Q, X)
-
-        plt.figure()
-        plt.imshow(X[:784].resize_(28 ,28), cmap='gray')
-        plt.title('Orig: %s, Pred: %s' % (target[0], pred[0]))
-        plt.show()
+    Q, P = train(train_labeled_loader, train_unlabeled_loader, valid_loader)
