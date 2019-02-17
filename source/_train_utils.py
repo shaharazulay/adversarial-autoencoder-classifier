@@ -30,10 +30,10 @@ def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss):
     print('Epoch-{}; D_loss_cat: {:.4}; D_loss_gauss: '
           '{:.4}; G_loss: {:.4}; recon_loss: {:.4}'.format(
             epoch,
-            D_loss_cat.data[0],
-            D_loss_gauss.data[0],
-            G_loss.data[0],
-            recon_loss.data[0]))
+            D_loss_cat.item(),
+            D_loss_gauss.item(),
+            G_loss.item(),
+            recon_loss.item()))
 
 def classification_accuracy(Q, data_loader):
     correct = 0
@@ -51,6 +51,10 @@ def classification_accuracy(Q, data_loader):
         correct += pred.eq(target.data).cpu().sum()
 
     return 100. * correct / N
+
+
+def zero_grad_all(*models):
+    [m.zero_grad() for m in models]
 
 # def create_latent(Q, X):
 #     '''
@@ -80,4 +84,5 @@ def classification_accuracy(Q, data_loader):
 #     cat = np.array(labels.data.tolist())
 #     cat = np.eye(n_classes)[cat].astype('float32')
 #     cat = torch.from_numpy(cat)
+
 #     return Variable(cat)
