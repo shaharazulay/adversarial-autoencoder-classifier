@@ -1,10 +1,29 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import sigmoid
 
 
-# Encoder
-class Q_net(nn.Module):
+
+class BaseModel(nn.Module):
+    '''
+    Base model defining loading and storing methods.
+    '''
+    def save(self, path):
+        torch.save(self.state_dict(), path)
+
+    @classmethod
+    def load(cls, path, *args, **kwargs):
+        model = cls(*args, **kwargs)
+        model.load_state_dict(torch.load(path))
+        model.eval()
+        return model
+
+
+class Q_net(BaseModel):
+    '''
+    Encoder network.
+    '''
     def __init__(self, input_size=784, hidden_size=1000, z_size=2, n_classes=10):
         super(Q_net, self).__init__()
         self.input_size = input_size
@@ -27,8 +46,10 @@ class Q_net(nn.Module):
         return y_cat, z_gauss
 
 
-# Decoder
-class P_net(nn.Module):
+class P_net(BaseModel):
+    '''
+    Decoder network.
+    '''
     def __init__(self, input_size=784, hidden_size=1000, z_size=2, n_classes=10):
         super(P_net, self).__init__()
         self.lin1 = nn.Linear(z_size + n_classes, hidden_size)
@@ -45,8 +66,10 @@ class P_net(nn.Module):
         return sigmoid(x)
 
 
-# Discriminator categorial
-class D_net_cat(nn.Module):
+class D_net_cat(BaseModel):
+    '''
+    Categorical descriminator network.
+    '''
     def __init__(self, n_classes=10, hidden_size=1000):
         super(D_net_cat, self).__init__()
         self.lin1 = nn.Linear(n_classes, hidden_size)
@@ -63,8 +86,10 @@ class D_net_cat(nn.Module):
         return sigmoid(x)
 
 
-# Discriminator gaussian
-class D_net_gauss(nn.Module):
+class D_net_gauss(BaseModel):
+    '''
+    Gaussian descriminator network.
+    '''
     def __init__(self, z_size=2, hidden_size=1000):
         super(D_net_gauss, self).__init__()
         self.lin1 = nn.Linear(z_size, hidden_size)
