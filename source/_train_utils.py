@@ -56,6 +56,12 @@ def classification_accuracy(Q, data_loader):
 def zero_grad_all(*models):
     [m.zero_grad() for m in models]
 
+def train_all(*models):
+    [m.train() for m in models]
+
+def eval_all(*models):
+    [m.eval() for m in models]
+
 # def create_latent(Q, X):
 #     '''
 #     Creates the latent representation for the samples in loader
