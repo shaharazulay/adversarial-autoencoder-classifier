@@ -32,7 +32,7 @@ setup(
         'source'
     ],
     license='bsd',
-    description='Traceable Python dictionary',
+    description='Adversarial Autoencoder Classifier',
     long_description=open('docs/README.rst').read(),
     install_requires=[],
     zip_safe=False,
