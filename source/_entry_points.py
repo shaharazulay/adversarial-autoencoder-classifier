@@ -31,7 +31,7 @@ def train_model(args=None):
 
     train_labeled_loader, train_unlabeled_loader, valid_loader = _data_utils.load_data(
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
-    Q, P = _train.train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs=args.n_epochs, n_classes=10, z_dim=2)
+    Q, P = _train.train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs=args.n_epochs, n_classes=10, z_dim=5)
     Q.save(os.path.join(args.dir_path, 'encoder'))
     P.save(os.path.join(args.dir_path, 'decoder'))
 
