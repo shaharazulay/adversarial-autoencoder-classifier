@@ -23,8 +23,8 @@ def show_predicted_labels(Q, P, valid_loader):
 
         labels.extend(y_pred.numpy())
 
-        # show_reconstruction(Q, P, X)
-        # plt.show()
+        #show_reconstruction(Q, P, X)
+        #plt.show()
 
     plt.figure()
     plt.hist(labels, bins=10)
@@ -51,12 +51,14 @@ def show_reconstruction(Q, P, X):
     latent_vec = torch.cat((latent_y, latent_z), 1)
     X_rec = P(latent_vec)
 
+    print X[0], X_rec[0]
     img_orig = np.array(X[0].data.tolist()).reshape(28, 28)
     img_rec = np.array(X_rec[0].data.tolist()).reshape(28, 28)
     plt.subplot(1, 2, 1)
     plt.imshow(img_orig, cmap='gray')
     plt.subplot(1, 2, 2)
     plt.imshow(img_rec, cmap='gray')
+    plt.title('predicted label: %s' % torch.argmax(latent_y, dim=1))
 
 
 def generate_digits(P, label, n_classes=10, z_dim=2):
@@ -75,13 +77,13 @@ def generate_digits(P, label, n_classes=10, z_dim=2):
 
 import os
 from _model import Q_net, P_net
-Q = Q_net().load(os.path.join('../data', 'encoder'))
-P = P_net().load(os.path.join('../data', 'decoder'))
+Q = Q_net().load(os.path.join('../data', 'encoder'), z_size=5, n_classes=10)
+P = P_net(z_size=5, n_classes=10).load(os.path.join('../data', 'decoder'), z_size=5, n_classes=10)
 
 import _data_utils
 cuda = torch.cuda.is_available()
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 train_labeled_loader, train_unlabeled_loader, valid_loader = _data_utils.load_data(
     data_path='../data', batch_size=100, **kwargs)
-#show_predicted_labels(Q, P, valid_loader)
-generate_digits(P, label=4)
+show_predicted_labels(Q, P, valid_loader)
+#generate_digits(P, label=4)
