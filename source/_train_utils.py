@@ -61,34 +61,3 @@ def train_all(*models):
 
 def eval_all(*models):
     [m.eval() for m in models]
-
-# def create_latent(Q, X):
-#     '''
-#     Creates the latent representation for the samples in loader
-#     return:
-#         z_values: numpy array with the latent representations
-#         labels: the labels corresponding to the latent representations
-#     '''
-#     Q.eval()
-#     labels = []
-#
-#         X, target = Variable(X), Variable(target)
-#         labels.extend(target.data.tolist())
-#         if cuda:
-#             X, target = X.cuda(), target.cuda()
-#         # Reconstruction phase
-#         z_sample = Q(X)
-#         if batch_idx > 0:
-#             z_values = np.concatenate((z_values, np.array(z_sample.data.tolist())))
-#         else:
-#             z_values = np.array(z_sample.data.tolist())
-#     labels = np.array(labels)
-#
-#     return z_values, labels
-
-# def get_categorical(labels, n_classes=10):
-#     cat = np.array(labels.data.tolist())
-#     cat = np.eye(n_classes)[cat].astype('float32')
-#     cat = torch.from_numpy(cat)
-
-#     return Variable(cat)

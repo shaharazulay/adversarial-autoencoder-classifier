@@ -31,6 +31,12 @@ setup(
     packages=[
         'source'
     ],
+    entry_points={
+        'console_scripts': [
+            'init_datasets = source._entry_points:init_datasets_main',
+            'train_model = source._entry_points:train_model_main',
+        ]
+    },
     license='bsd',
     description='Adversarial Autoencoder Classifier',
     long_description=open('docs/README.rst').read(),
