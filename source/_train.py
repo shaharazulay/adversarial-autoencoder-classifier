@@ -127,16 +127,16 @@ def _train_epoch(
 def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
     torch.manual_seed(10)
 
+    Q = Q_net(z_size=z_dim, n_classes=n_classes)
+    P = P_net(z_size=z_dim, n_classes=n_classes)
+    D_cat = D_net_cat(n_classes=n_classes)
+    D_gauss = D_net_gauss(z_size=z_dim)
+
     if cuda:
-        Q = Q_net().cuda()
-        P = P_net().cuda()
-        D_cat = D_net_cat().cuda()
-        D_gauss = D_net_gauss().cuda()
-    else:
-        Q = Q_net()
-        P = P_net()
-        D_gauss = D_net_gauss()
-        D_cat = D_net_cat()
+        Q = Q.cuda()
+        P = P.cuda()
+        D_gauss = D_gauss.cuda()
+        D_cat = D_cat.cuda()
 
     # Set learning rates
     auto_encoder_lr = 0.0006
