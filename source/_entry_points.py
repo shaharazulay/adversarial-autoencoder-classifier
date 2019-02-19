@@ -2,8 +2,8 @@ import os
 import argparse
 import torch
 
-import _data_utils
-import _train
+from _data_utils import init_datasets, load_data
+from _train import train
 
 cuda = torch.cuda.is_available()
 
@@ -15,7 +15,7 @@ def init_datasets_main(args=None):
     _add_dir_path_to_parser(parser)
     args = parser.parse_args()
 
-    _data_utils.init_datasets(args.dir_path)
+    init_datasets(args.dir_path)
 
 
 def train_model_main(args=None):
@@ -31,16 +31,16 @@ def train_model_main(args=None):
 
     kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
-    train_labeled_loader, train_unlabeled_loader, valid_loader = _data_utils.load_data(
+    train_labeled_loader, train_unlabeled_loader, valid_loader = load_data(
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
-    Q, P = _train.train(
+    Q, P = train(
         train_labeled_loader,
         train_unlabeled_loader,
         valid_loader,
         epochs=args.n_epochs,
         n_classes=args.n_classes,
         z_dim=args.z_size)
-        
+
     Q.save(os.path.join(args.dir_path, 'encoder'))
     P.save(os.path.join(args.dir_path, 'decoder'))
 

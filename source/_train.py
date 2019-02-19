@@ -1,5 +1,7 @@
 import torch
 import itertools
+import numpy as np
+
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
@@ -18,7 +20,8 @@ def _train_epoch(
     '''
     Train procedure for one epoch.
     '''
-    TINY = 1e-15
+    epsilon = np.finfo(float).eps
+
     # load models and optimizers
     P, Q, D_cat, D_gauss = models
     P_decoder_optim, Q_encoder_optim, Q_classifier_optim, Q_regularization_optim, D_cat_optim, D_gauss_optim = optimizers
@@ -53,7 +56,7 @@ def _train_epoch(
                 latent_vec = torch.cat(Q(X), 1)
                 X_rec = P(latent_vec)
 
-                recon_loss = F.binary_cross_entropy(X_rec + TINY, X + TINY)
+                recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
                 #recon_loss = pixelwise_loss(X, X_rec)
 
                 recon_loss.backward()
@@ -81,8 +84,8 @@ def _train_epoch(
                 D_fake_cat = D_cat(z_fake_cat)
                 D_fake_gauss = D_gauss(z_fake_gauss)
 
-                D_loss_cat = - torch.mean(torch.log(D_real_cat + TINY) + torch.log(1 - D_fake_cat + TINY))
-                D_loss_gauss = - torch.mean(torch.log(D_real_gauss + TINY) + torch.log(1 - D_fake_gauss + TINY))
+                D_loss_cat = - torch.mean(torch.log(D_real_cat + epsilon) + torch.log(1 - D_fake_cat + epsilon))
+                D_loss_gauss = - torch.mean(torch.log(D_real_gauss + epsilon) + torch.log(1 - D_fake_gauss + epsilon))
 
                 D_loss = D_loss_cat + D_loss_gauss
                 D_loss = D_loss
@@ -101,7 +104,7 @@ def _train_epoch(
                 D_fake_cat = D_cat(z_fake_cat)
                 D_fake_gauss = D_gauss(z_fake_gauss)
 
-                G_loss = - torch.mean(torch.log(D_fake_cat + TINY)) - torch.mean(torch.log(D_fake_gauss + TINY))
+                G_loss = - torch.mean(torch.log(D_fake_cat + epsilon)) - torch.mean(torch.log(D_fake_gauss + epsilon))
                 G_loss = G_loss
                 G_loss.backward()
                 Q_regularization_optim.step()
