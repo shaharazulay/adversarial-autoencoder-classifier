@@ -23,7 +23,7 @@ def sample_categorical(batch_size, n_classes=10):
     cat = torch.from_numpy(cat)
     return Variable(cat)
 
-def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss):
+def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss=None):
     '''
     Print loss
     '''
@@ -33,7 +33,7 @@ def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss):
             D_loss_cat.item(),
             D_loss_gauss.item(),
             G_loss.item(),
-            recon_loss.item()))
+            recon_loss.item() if recon_loss else None))
 
 def classification_accuracy(Q, data_loader):
     correct = 0
