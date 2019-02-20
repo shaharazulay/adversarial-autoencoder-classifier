@@ -12,7 +12,7 @@ Shahar Azulay, Rinat Ishak
 |PyTorch|_ |Python27|_ |Python35|_ |License|_
 
 
-.. |PyTorch| image:: https://github.com/valohai/ml-logos/blob/master/pytorch.svg
+.. |PyTorch| image:: https://github.com/pytorch/pytorch/blob/master/docs/source/_static/img/pytorch-logo-flame.svg
 .. _PyTorch: https://pytorch.org/
 
 .. |License| image:: https://img.shields.io/badge/license-BSD--3--Clause-brightgreen.svg
