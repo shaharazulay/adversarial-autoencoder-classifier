@@ -2,12 +2,9 @@ Non Parametric Advesarial AE Classifiers
 ============
 **PyTorch implementations of Non-parametric Unsupervised Classification with Adversarial Autoencoders.**
 
-Inspired by: https://github.com/fducau/AAE_pytorch
-
-
 .. image:: _static/logo.png
 
-Shahar Azulay, Rinat Ishak
+Shahar Azulay
 
 |PyTorch|_ |Python27|_ |Python35|_ |License|_
 
@@ -28,6 +25,8 @@ Shahar Azulay, Rinat Ishak
 .. _Documentation: https://traceable-dict.readthedocs.io/en/latest/
 
 |Documentation|_
+
+Inspired by: https://github.com/fducau/AAE_pytorch
 
 **Usage Examples:**
 
