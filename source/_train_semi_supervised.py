@@ -11,8 +11,8 @@ from _model import Q_net, P_net, D_net_cat, D_net_gauss
 from _train_utils import *
 
 cuda = torch.cuda.is_available()
-seed = 10
-pixelwise_loss = torch.nn.L1Loss()
+#seed = 10
+#pixelwise_loss = torch.nn.L1Loss()
 
 
 def _train_epoch(
@@ -128,7 +128,7 @@ def _train_epoch(
 
 
 def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
-    torch.manual_seed(10)
+    #torch.manual_seed(10)
 
     Q = Q_net(z_size=z_dim, n_classes=n_classes)
     P = P_net(z_size=z_dim, n_classes=n_classes)
