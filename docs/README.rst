@@ -9,7 +9,7 @@ Inspired by: https://github.com/fducau/AAE_pytorch
 
 Shahar Azulay, Rinat Ishak
 
-|Python27|_ |Python35|_ |License|_
+|PyTorch|_ |Python27|_ |Python35|_ |License|_
 
 
 .. |PyTorch| image:: https://github.com/valohai/ml-logos/blob/master/pytorch.svg
