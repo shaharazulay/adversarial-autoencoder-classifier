@@ -111,8 +111,8 @@ def generate_digits(P, label, n_classes=10, z_dim=2):
 
 import os
 from _model import Q_net, P_net
-Q = Q_net().load(os.path.join('../data', 'encoder_semi_supervised'), z_size=2, n_classes=10)
-P = P_net().load(os.path.join('../data', 'decoder_semi_supervised'), z_size=2, n_classes=10)
+Q = Q_net().load(os.path.join('../data', 'encoder_unsupervised'), z_size=2, n_classes=10)
+P = P_net().load(os.path.join('../data', 'decoder_unsupervised'), z_size=2, n_classes=10)
 
 import _data_utils
 cuda = torch.cuda.is_available()

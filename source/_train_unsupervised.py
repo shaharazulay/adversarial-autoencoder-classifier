@@ -149,7 +149,7 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
             n_classes,
             z_dim)
 
-        if epoch % 10 == 0:
+        if epoch % 2 == 0:
             val_acc = classification_accuracy(Q, valid_loader)
             report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss)
             #print('Classification Loss: {:.3}'.format(class_loss.item()))
