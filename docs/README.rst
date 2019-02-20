@@ -27,6 +27,8 @@ Shahar Azulay
 
 |Documentation|_
 
+[1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2
+
 Inspired by: https://github.com/fducau/AAE_pytorch
 
 **Usage Examples:**
