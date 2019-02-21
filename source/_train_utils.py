@@ -1,3 +1,4 @@
+import sys
 import torch
 from torch.autograd import Variable
 import numpy as np
@@ -23,18 +24,6 @@ def sample_categorical(batch_size, n_classes=10):
     cat = torch.from_numpy(cat)
     return Variable(cat)
 
-def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss=None):
-    '''
-    Print loss
-    '''
-    print('Epoch-{}; D_loss_cat: {:.4}; D_loss_gauss: '
-          '{:.4}; G_loss: {:.4}; recon_loss: {:.4}'.format(
-            epoch,
-            D_loss_cat.item(),
-            D_loss_gauss.item(),
-            G_loss.item(),
-            recon_loss.item() if recon_loss else None))
-
 def classification_accuracy(Q, data_loader):
     correct = 0
     N = len(data_loader.dataset)
@@ -52,7 +41,6 @@ def classification_accuracy(Q, data_loader):
 
     return 100. * correct / N
 
-
 def zero_grad_all(*models):
     [m.zero_grad() for m in models]
 
@@ -61,3 +49,31 @@ def train_all(*models):
 
 def eval_all(*models):
     [m.eval() for m in models]
+
+def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss=None):
+    '''
+    Print loss
+    '''
+    base_loss_report = '\nEpoch-{}; D_loss_cat: {:.4}; D_loss_gauss: '\
+        '{:.4}; G_loss: {:.4}; recon_loss: {:.4}'.format(
+            epoch,
+            D_loss_cat.item(),
+            D_loss_gauss.item(),
+            G_loss.item(),
+            recon_loss.item())
+
+    if mode_recon_loss:
+        base_loss_report += ', mode_recon_loss: {:.4}'.format(mode_recon_loss.item())
+
+    print(base_loss_report)
+
+def report_progress(percent, barLen=20):
+    sys.stdout.write("\rcurrent epoch:: ")
+    progress = ""
+    for i in range(barLen):
+        if i < int(barLen * percent):
+            progress += "="
+        else:
+            progress += " "
+    sys.stdout.write("[ %s ] %.2f%%" % (progress, percent * 100))
+    sys.stdout.flush()
