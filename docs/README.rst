@@ -24,8 +24,7 @@ Shahar Azulay
 .. _Python35:
     
 .. |Documentation| image:: _static/readthedocs_logo.jpg
-.. _Documentation: https://traceable-dict.readthedocs.io/en/latest/
-
+.. _Documentation: https://adversarial-autoencoder-classif.readthedocs.io/en/latest/
 
 [1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2
 
