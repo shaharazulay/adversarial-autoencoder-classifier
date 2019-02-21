@@ -31,8 +31,8 @@ def show_predicted_labels(Q, P, valid_loader, n_classes=10):
 
         labels.extend(y_pred.numpy())
 
-        # show_reconstruction(Q, P, X)
-        # plt.show()
+        show_reconstruction(Q, P, X)
+        plt.show()
 
     plt.figure()
     plt.hist(labels, bins=10)
