@@ -4,7 +4,7 @@ Non Parametric Advesarial AutoEncoder Classifiers
 
 Shahar Azulay
 
-|PyTorch|_ |Python27|_ |Python35|_ |License|_
+|Python27|_ |Python35|_ |License|_ |PyTorch|_ 
 
 |Documentation|_
 
