@@ -13,7 +13,12 @@ def predict_labels(Q, X):
     pred_labels = torch.argmax(latent_y, dim=1)
     return pred_labels
 
-def sample_categorical(batch_size, n_classes=10):
+def get_categorial(label, n_classes=10):
+    latent_y = np.eye(n_classes)[label].astype('float32')
+    latent_y = torch.from_numpy(latent_y)
+    return Variable(latent_y)
+
+def sample_categorical(batch_size, n_classes=10, label=None):
     '''
      Sample from a categorical distribution
      of size batch_size and # of classes n_classes
@@ -50,7 +55,7 @@ def train_all(*models):
 def eval_all(*models):
     [m.eval() for m in models]
 
-def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss=None):
+def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss=None, mode_disentanglement_loss=None):
     '''
     Print loss
     '''
@@ -64,6 +69,8 @@ def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_
 
     if mode_recon_loss:
         base_loss_report += ', mode_recon_loss: {:.4}'.format(mode_recon_loss.item())
+    if mode_disentanglement_loss:
+        base_loss_report += ', mode_disentanglement_loss: {:.4}'.format(mode_disentanglement_loss.item())
 
     print(base_loss_report)
 

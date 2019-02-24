@@ -12,8 +12,6 @@ from _train_utils import *
 
 cuda = torch.cuda.is_available()
 #seed = 10
-#pixelwise_loss = torch.nn.L1Loss()
-
 
 def _train_epoch(
     models, optimizers, train_labeled_loader, train_unlabeled_loader, n_classes, z_dim):
@@ -57,7 +55,6 @@ def _train_epoch(
                 X_rec = P(latent_vec)
 
                 recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
-                #recon_loss = pixelwise_loss(X, X_rec)
 
                 recon_loss.backward()
                 P_decoder_optim.step()
@@ -169,7 +166,7 @@ def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_
             n_classes,
             z_dim)
 
-        if epoch % 10 == 0:
+        if epoch % 5 == 0:
             train_acc = classification_accuracy(Q, train_labeled_loader)
             val_acc = classification_accuracy(Q, valid_loader)
             report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss)

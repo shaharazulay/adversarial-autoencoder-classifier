@@ -61,7 +61,7 @@ def train_unsupervised_model_main(args=None):
 
     train_labeled_loader, train_unlabeled_loader, valid_loader = load_data(
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
-    Q, P = train_unsupervised(
+    Q, P, P_mode_decoder = train_unsupervised(
         train_unlabeled_loader,
         valid_loader,
         epochs=args.n_epochs,
@@ -70,6 +70,7 @@ def train_unsupervised_model_main(args=None):
 
     Q.save(os.path.join(args.dir_path, 'encoder_unsupervised'))
     P.save(os.path.join(args.dir_path, 'decoder_unsupervised'))
+    P_mode_decoder.save(os.path.join(args.dir_path, 'mode_decoder_unsupervised'))
 
 
 def _add_dir_path_to_parser(parser):
