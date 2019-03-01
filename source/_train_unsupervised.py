@@ -12,7 +12,6 @@ from _train_utils import *
 
 cuda = torch.cuda.is_available()
 seed = 10
-pixelwise_loss = torch.nn.L1Loss()
 
 
 def _train_epoch(
@@ -60,7 +59,34 @@ def _train_epoch(
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         #######################
-        # Mode decoding phase
+        # TESTTTTTTTTTTTT
+        #######################
+        # latent_y, latent_z = Q(X)
+        #
+        # mode_disentanglement_loss = 0
+        #
+        # for label_A in range(n_classes):
+        #     latent_y_A = get_categorial(label_A).expand_as(torch.zeros((batch_size, n_classes)))
+        #     latent_vec_A = torch.cat((latent_y_A, latent_z), 1)
+        #     X_mode_rec_A = P(latent_vec_A)
+        #
+        #     for label_B in range(label_A + 1, n_classes):
+        #         latent_y_B = get_categorial(label_B).expand_as(torch.zeros((batch_size, n_classes)))
+        #         latent_vec_B = torch.cat((latent_y_B, latent_z), 1)
+        #         X_mode_rec_B = P(latent_vec_B)
+        #
+        #         mode_disentanglement_loss += -F.binary_cross_entropy(X_mode_rec_A + epsilon, X_mode_rec_B.detach() + epsilon)
+        #
+        # mode_disentanglement_loss /= (n_classes * (n_classes - 1) / 2)
+        # mode_disentanglement_loss.backward()
+        # P_decoder_optim.step()
+        # Q_encoder_optim.step()
+        #
+        # # Init gradients
+        # zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
+
+        #######################
+        # Mode reconstruction phase
         #######################
         latent_y, latent_z = Q(X)
         X_mode_rec = P_mode_decoder(latent_y)
@@ -70,6 +96,23 @@ def _train_epoch(
         mode_recon_loss.backward()
         P_mode_decoder_optim.step()
         Q_mode_encoder_optim.step()
+
+        # Init gradients
+        zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
+
+        #######################
+        # Mode cyclic phase
+        #######################
+        Q.eval()
+
+        latent_y, _ = Q(X)
+        X_mode_rec = P_mode_decoder(latent_y)
+
+        latent_mode_cylic_y, _ = Q(X_mode_rec)
+        mode_cyclic_loss = 10 * F.binary_cross_entropy(latent_y, latent_mode_cylic_y.detach())  # NOTE: *10 is here
+
+        mode_cyclic_loss.backward()
+        P_mode_decoder_optim.step()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
@@ -142,15 +185,48 @@ def _train_epoch(
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         # report progress
-        report_loss(-1, D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss)
-        #report_progress(float(batch_num) / n_batches)
+        # report_loss(
+        #     epoch=-1,
+        #     all_losses=(D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss),
+        #     descriptions=['D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss', 'mode_recon_loss', 'mode_cyclic_loss', 'mode_disentanglement_loss'])
+        report_progress(float(batch_num) / n_batches)
 
-    return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss
+    return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss
 
 
-def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
-    torch.manual_seed(10)
+def _get_optimizers(models):
+    '''
+    Set and return all relevant optimizers needed for the training process.
+    '''
+    P, Q, D_cat, D_gauss, P_mode_decoder = models
 
+    # Set learning rates
+    auto_encoder_lr = 0.0006
+    regularization_lr = 0.0008
+    classifier_lr = 0.0001
+
+    # Set optimizators
+    P_decoder_optim = optim.Adam(P.parameters(), lr=auto_encoder_lr)
+    Q_encoder_optim = optim.Adam(Q.parameters(), lr=auto_encoder_lr)
+
+    P_mode_decoder_optim = optim.Adam(P_mode_decoder.parameters(), lr=classifier_lr)
+    Q_mode_encoder_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
+
+    Q_regularization_optim = optim.Adam(Q.parameters(), lr=regularization_lr)
+    D_gauss_optim = optim.Adam(D_gauss.parameters(), lr=regularization_lr)
+    D_cat_optim = optim.Adam(D_cat.parameters(), lr=regularization_lr)
+
+    optimizers =\
+        P_decoder_optim, Q_encoder_optim,\
+        Q_mode_encoder_optim, P_mode_decoder_optim,\
+        Q_regularization_optim, D_cat_optim, D_gauss_optim
+
+    return optimizers
+
+def _get_models(n_classes, z_dim):
+    '''
+    Set and return all sub-modules that comprise the full model.
+    '''
     Q = Q_net(z_size=z_dim, n_classes=n_classes)
     P = P_net(z_size=z_dim, n_classes=n_classes)
     D_cat = D_net_cat(n_classes=n_classes)
@@ -166,38 +242,39 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
         D_cat = D_cat.cuda()
         P_mode_decoder = P_mode_decoder.cuda()
 
-    # Set learning rates
-    auto_encoder_lr = 0.0001 #0.0006
-    classifier_lr = 0.006
-    regularization_lr = 0.0002
-    generator_lr = 0.002
-
-    # Set optimizators
-    P_decoder_optim = optim.Adam(P.parameters(), lr=auto_encoder_lr)
-    Q_encoder_optim = optim.Adam(Q.parameters(), lr=auto_encoder_lr)
-
-    P_mode_decoder_optim = optim.Adam(P_mode_decoder.parameters(), lr=classifier_lr)
-    Q_mode_encoder_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
-
-    Q_regularization_optim = optim.Adam(Q.parameters(), lr=generator_lr)
-    D_gauss_optim = optim.Adam(D_gauss.parameters(), lr=regularization_lr)
-    D_cat_optim = optim.Adam(D_cat.parameters(), lr=regularization_lr)
-
     models = P, Q, D_cat, D_gauss, P_mode_decoder
-    optimizers = P_decoder_optim, Q_encoder_optim, Q_mode_encoder_optim, P_mode_decoder_optim, Q_regularization_optim, D_cat_optim, D_gauss_optim
+    return models
+
+
+def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
+    '''
+    Train the full model.
+    '''
+    #torch.manual_seed(10)
+    learning_curve = []
+
+    models = _get_models(n_classes, z_dim)
+    optimizers = _get_optimizers(models)
+    P, Q, D_cat, D_gauss, P_mode_decoder = models
 
     for epoch in range(epochs):
-        D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss = _train_epoch(
+        all_losses = _train_epoch(
             models,
             optimizers,
             train_unlabeled_loader,
             n_classes,
             z_dim)
 
-        if epoch % 2 == 0:
+        learning_curve.append(all_losses)
+
+        if epoch % 1 == 0:
             val_acc = classification_accuracy(Q, valid_loader)
-            report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss)
-            #print('Classification Loss: {:.3}'.format(class_loss.item()))
+            report_loss(
+                epoch,
+                all_losses,
+                descriptions=[
+                    'D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss',
+                    'mode_recon_loss', 'mode_cyclic_loss', 'mode_disentanglement_loss'])
             print('Validation accuracy: {} %'.format(val_acc))
 
-    return Q, P, P_mode_decoder
+    return Q, P, P_mode_decoder, learning_curve

@@ -2,6 +2,8 @@ import os
 import argparse
 import torch
 
+import matplotlib.pyplot as plt
+
 from _data_utils import init_datasets, load_data
 from _train_semi_supervised import train as train_semi_supervised
 from _train_unsupervised import train as train_unsupervised
@@ -34,7 +36,7 @@ def train_semi_supervised_model_main(args=None):
 
     train_labeled_loader, train_unlabeled_loader, valid_loader = load_data(
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
-    Q, P = train_semi_supervised(
+    Q, P, learning_curve = train_semi_supervised(
         train_labeled_loader,
         train_unlabeled_loader,
         valid_loader,
@@ -44,6 +46,13 @@ def train_semi_supervised_model_main(args=None):
 
     Q.save(os.path.join(args.dir_path, 'encoder_semi_supervised'))
     P.save(os.path.join(args.dir_path, 'decoder_semi_supervised'))
+
+    plt.plot(learning_curve)
+    plt.title('Semi-Supervised Learning Curve')
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.legend(['D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss', 'class_loss'])
+    plt.savefig((os.path.join(args.dir_path, 'semi_supervised_learning_curve.png')))
 
 
 def train_unsupervised_model_main(args=None):
@@ -61,7 +70,7 @@ def train_unsupervised_model_main(args=None):
 
     train_labeled_loader, train_unlabeled_loader, valid_loader = load_data(
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
-    Q, P, P_mode_decoder = train_unsupervised(
+    Q, P, P_mode_decoder, learning_curve = train_unsupervised(
         train_unlabeled_loader,
         valid_loader,
         epochs=args.n_epochs,
@@ -71,6 +80,16 @@ def train_unsupervised_model_main(args=None):
     Q.save(os.path.join(args.dir_path, 'encoder_unsupervised'))
     P.save(os.path.join(args.dir_path, 'decoder_unsupervised'))
     P_mode_decoder.save(os.path.join(args.dir_path, 'mode_decoder_unsupervised'))
+
+    plt.plot(learning_curve)
+    plt.title('Unsupervised Learning Curve')
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.legend([
+        'D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss',
+        'mode_recon_loss', 'mode_cyclic_loss', 'mode_disentanglement_loss'
+    ])
+    plt.savefig((os.path.join(args.dir_path, 'unsupervised_learning_curve.png')))
 
 
 def _add_dir_path_to_parser(parser):

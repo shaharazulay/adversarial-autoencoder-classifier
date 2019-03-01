@@ -64,6 +64,7 @@ def show_reconstruction(Q, P, X):
     plt.imshow(img_rec, cmap='gray')
     plt.title('predicted label: %s' % torch.argmax(latent_y, dim=1)[0])
 
+
 def show_sample_from_each_class(Q, X, n_classes):
     Q.eval()
 
@@ -94,6 +95,23 @@ def show_sample_from_each_class(Q, X, n_classes):
     fig.show()
 
 
+def show_all_learned_modes(P_mode_decoder, n_classes=10):
+
+    for label in range(n_classes):
+        latent_y = np.eye(n_classes)[label].astype('float32')
+        latent_y = torch.from_numpy(latent_y)
+        latent_y = Variable(latent_y)
+
+        X_mode_rec = P_mode_decoder(latent_y)
+        mode_img = np.array(X_mode_rec.data.tolist()).reshape(28, 28)
+        plt.subplot(1, n_classes, label + 1)
+        plt.imshow(mode_img, cmap='gray')
+        plt.title(label)
+        plt.axis('off')
+
+    plt.show()
+
+
 def generate_digits(P, label, n_classes=10, z_dim=2):
     P.eval()
 
@@ -111,14 +129,18 @@ def generate_digits(P, label, n_classes=10, z_dim=2):
 
 import os
 from _model import Q_net, P_net
-Q = Q_net().load(os.path.join('../data', 'encoder_unsupervised'), z_size=2, n_classes=10)
-P = P_net().load(os.path.join('../data', 'decoder_unsupervised'), z_size=2, n_classes=10)
+data_dir = '../data'
+# data_dir = '../data/25.2 - 10:00AM'
+Q = Q_net().load(os.path.join(data_dir, 'encoder_unsupervised'), z_size=2, n_classes=10)
+P = P_net().load(os.path.join(data_dir, 'decoder_unsupervised'), z_size=2, n_classes=10)
+P_mode_decoder = P_net().load(os.path.join(data_dir, 'mode_decoder_unsupervised'), z_size=0, n_classes=10)
 
 import _data_utils
 cuda = torch.cuda.is_available()
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 train_labeled_loader, train_unlabeled_loader, valid_loader = _data_utils.load_data(
     data_path='../data', batch_size=100, **kwargs)
+show_all_learned_modes(P_mode_decoder, n_classes=10)
 show_predicted_labels(Q, P, valid_loader, n_classes=10)
 #grid_plot2d(Q, P, valid_loader)
 #generate_digits(P, label=4)

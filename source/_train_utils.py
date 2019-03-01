@@ -55,22 +55,14 @@ def train_all(*models):
 def eval_all(*models):
     [m.eval() for m in models]
 
-def report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss=None, mode_disentanglement_loss=None):
+def report_loss(epoch, all_losses, descriptions):
     '''
-    Print loss
+    Print loss.
     '''
-    base_loss_report = '\nEpoch-{}; D_loss_cat: {:.4}; D_loss_gauss: '\
-        '{:.4}; G_loss: {:.4}; recon_loss: {:.4}'.format(
-            epoch,
-            D_loss_cat.item(),
-            D_loss_gauss.item(),
-            G_loss.item(),
-            recon_loss.item())
+    base_loss_report = '\nEpoch-{}; '.format(epoch)
 
-    if mode_recon_loss:
-        base_loss_report += ', mode_recon_loss: {:.4}'.format(mode_recon_loss.item())
-    if mode_disentanglement_loss:
-        base_loss_report += ', mode_disentanglement_loss: {:.4}'.format(mode_disentanglement_loss.item())
+    for loss, desc in zip(all_losses, descriptions):
+        base_loss_report += '{}: {:.4}; '.format(desc, loss.item())
 
     print(base_loss_report)
 

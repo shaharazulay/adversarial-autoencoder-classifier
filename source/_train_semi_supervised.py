@@ -124,19 +124,11 @@ def _train_epoch(
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss
 
 
-def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
-    #torch.manual_seed(10)
-
-    Q = Q_net(z_size=z_dim, n_classes=n_classes)
-    P = P_net(z_size=z_dim, n_classes=n_classes)
-    D_cat = D_net_cat(n_classes=n_classes)
-    D_gauss = D_net_gauss(z_size=z_dim)
-
-    if cuda:
-        Q = Q.cuda()
-        P = P.cuda()
-        D_gauss = D_gauss.cuda()
-        D_cat = D_cat.cuda()
+def _get_optimizers(models):
+    '''
+    Set and return all relevant optimizers needed for the training process.
+    '''
+    P, Q, D_cat, D_gauss = models
 
     # Set learning rates
     auto_encoder_lr = 0.0006
@@ -153,12 +145,46 @@ def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_
 
     Q_classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
 
+    optimizers =\
+        P_decoder_optim, Q_encoder_optim,\
+        Q_classifier_optim,\
+        Q_regularization_optim, D_cat_optim, D_gauss_optim
+
+    return optimizers
+
+
+def _get_models(n_classes, z_dim):
+    '''
+    Set and return all sub-modules that comprise the full model.
+    '''
+    Q = Q_net(z_size=z_dim, n_classes=n_classes)
+    P = P_net(z_size=z_dim, n_classes=n_classes)
+    D_cat = D_net_cat(n_classes=n_classes)
+    D_gauss = D_net_gauss(z_size=z_dim)
+
+    if cuda:
+        Q = Q.cuda()
+        P = P.cuda()
+        D_gauss = D_gauss.cuda()
+        D_cat = D_cat.cuda()
 
     models = P, Q, D_cat, D_gauss
-    optimizers = P_decoder_optim, Q_encoder_optim, Q_classifier_optim, Q_regularization_optim, D_cat_optim, D_gauss_optim
+    return models
+
+
+def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
+    '''
+    Train the full model.
+    '''
+    #torch.manual_seed(10)
+    learning_curve = []
+
+    models = _get_models(n_classes, z_dim)
+    optimizers = _get_optimizers(models)
+    P, Q, D_cat, D_gauss = models
 
     for epoch in range(epochs):
-        D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss = _train_epoch(
+        all_losses = _train_epoch(
             models,
             optimizers,
             train_labeled_loader,
@@ -166,12 +192,17 @@ def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_
             n_classes,
             z_dim)
 
-        if epoch % 5 == 0:
+        learning_curve.append(all_losses)
+
+        if epoch % 1 == 0:
             train_acc = classification_accuracy(Q, train_labeled_loader)
             val_acc = classification_accuracy(Q, valid_loader)
-            report_loss(epoch, D_loss_cat, D_loss_gauss, G_loss, recon_loss)
+            report_loss(
+                epoch,
+                all_losses[:-1],
+                descriptions=['D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss'])
             print('Classification Loss: {:.3}'.format(class_loss.item()))
             print('Train accuracy: {} %'.format(train_acc))
             print('Validation accuracy: {} %'.format(val_acc))
 
-    return Q, P
+    return Q, P, learning_curve
