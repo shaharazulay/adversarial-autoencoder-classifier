@@ -4,8 +4,9 @@ Non Parametric Advesarial AutoEncoder Classifiers
 
 Shahar Azulay
 
-|PyTorch|_ |Python27|_ |Python35|_ |License|_
+|Python27|_ |Python35|_ |License|_ |PyTorch|_ 
 
+|Documentation|_
 
 .. image:: _static/logo.png
 
@@ -23,9 +24,7 @@ Shahar Azulay
 .. _Python35:
     
 .. |Documentation| image:: _static/readthedocs_logo.jpg
-.. _Documentation: https://traceable-dict.readthedocs.io/en/latest/
-
-|Documentation|_
+.. _Documentation: https://adversarial-autoencoder-classif.readthedocs.io/en/latest/
 
 [1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2
 
