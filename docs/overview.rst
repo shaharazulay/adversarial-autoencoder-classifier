@@ -54,3 +54,6 @@ The inference is performed using the decoder alone (Q) and observing the latent 
 .. image:: _static/adversarial_autoencoder_inference.png
 
 This is how the model can tested and validated, using the inference process over a pre-known validation set.
+
+*[1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2*
+
