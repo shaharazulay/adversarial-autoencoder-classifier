@@ -1,4 +1,4 @@
-Non Parametric Advesarial AutoEncoder Classifiers
+Non Parametric Classification with Advesarial AutoEncoders
 ============
 **PyTorch implementation of Non-parametric Unsupervised Classification with Adversarial Autoencoders.**
 
