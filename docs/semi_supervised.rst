@@ -37,7 +37,7 @@ The results of the semi-supervised model reached **94% accuracy**, which shows g
 
 .. figure:: _static/semi_supervised_samples_from_all_lables.png
 
-  ::
+  (1)::
     *each column representing a predicted label for the original displayed images, showing the high accuracy of the model*
   
 **Visual reconstruction** 
