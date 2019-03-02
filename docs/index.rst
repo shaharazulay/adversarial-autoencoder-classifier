@@ -1,14 +1,15 @@
 .. include:: README.rst
 
 .. toctree::
-   :caption: Overview
+   :caption: Vartional AutoEncoders Overview
 
    overview
    
 .. toctree::
-   :caption: Basic Examples
+   :caption: Semi-Supervised VAE
    
+   semi_supervised
   
 .. toctree::
-   :caption: Advanced Use Cases
+   :caption: Use Examples
 
