@@ -1,24 +1,31 @@
 *****
-Semi Supervised VAE
+Semi Supervised Classification with Advesarial Auto Encoders
 *****
 
 
 General Concept
 -----
 
-In the concept described in [1], Variational AE can be submitted to semi-supervised learning.
+In the concept described in [1], Advesarial AE can be submitted to semi-supervised learning, training them to predict the correct label using their latent feature representation, and based on a semi-supervised training set.
 
-The adversarial autoencoder contains a simple AE at its center. The model for semi-supervised learning exploits the generative description of the unlabeled data
+As described in the overview of this project, the adversarial autoencoder contains a simple AE at its center.
+The training method for semi-supervised learning exploits the generative description of the unlabeled data
 to improve the classification performance that would be obtained by using only the labeled data.
+
 As in many cases, unlabeled data is more abundant and accessible. Using it as part of the adversarial AE learning, will help the encoding improve, alongside it producing better labeling.
 
-**The general schema can be seen here:**
+**The general schema for semi-supervised learning can be seen here:**
 
 .. image:: _static/semi_supervised_schema.png
 
-The basic schema follows the exact implementation of VAE, with the only difference of introducing a labeled image from time to time into the training process.
+The basic schema follows the exact implementation of the advesarial AE, with the only difference of introducing a labeled image from time to time into the training process.
 The labeled image is treated differently and is measured using a new Cross Entropy loss again the known target label.
 This loss only effect the Encoder (Q) - causing it to learn how to predict the labled images currectly over the latent y categorical part.
+
+Followed the training process, the semi-supervised advesarial AE is in fact a classifier as any other. 
+The inference is performed using the decoder alone (Q) and observing the latent y part of the latent features, which can provide the predicted label for a new unseen input image.
+
+.. image:: _static/adversarial_autoencoder_inference.png
 
 
 The Training Process
