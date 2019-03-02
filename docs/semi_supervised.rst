@@ -21,6 +21,26 @@ The labeled image is treated differently and is measured using a new Cross Entro
 This loss only effect the Encoder (Q) - causing it to learn how to predict the labled images currectly over the latent y categorical part.
 
 
+The Training Process
+-----
+
+The training process is divided into three major parts:
+1. **Auto Encoding (reconstruction)** where the Encoder-Decoder networks (Q, P) learns to encode and reconstruct the image.
+2. **Adversarial** where the encoder learns how to produce latent features y which are categorical and z which are normally distirbuted.
+3. **Semi-supervised** where the encoder learns to predict the right label for a pre-known labeled image.
+
+The success of the training process can be measured based on two grounds:
+
+**Validation accuracy** on a held out labeled validation set.
+The results of the semi-supervised model reached 94% accuracy, which shows good performance and that the model learns the labeled part properly.
+
+**Visual reconstruction** 
+Here we can see from visual examples that the reconstruction of an image (using the encoding-decoding pipeline) works pretty well. The reconstructed image is slightly blurry, which might be corrected with a slightly different loss function.
+
+.. image:: _static/semi_supervised_reconstruction.png
+
+* an example reconstruction of an original "0" digit image*
+
 The Latent Features
 -----
 
