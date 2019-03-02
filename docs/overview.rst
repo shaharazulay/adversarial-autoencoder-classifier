@@ -1,30 +1,41 @@
-General Concept
+The Model
 -----
 
-Often a Python dictionary object is used to represent a pre-known structured data that captures some state of a system.
-A non-relational database such as 
-DB is a great example of such use-case, where the BSON-based documents can easily be loaded into a Python dictionary.
-Those dict-like documents help store complex information, whose structure may change over time, and are highly common in the industry.
+Adversarial AutoEncoders were first described by [1].
 
-In cases where the dictionary or JSON-like structure represents a meaningful state of a system, tracing it changes may be a highly valueble part in the monitoring of the system.
+The proposes adversarial autoencoder (AAE) uses the concept of generative adversarial networks
+(GAN) to perform variational inference by matching the posterior of the latent encoding vector of the autoencoder with an pre-selected prior distribution.
 
-This module implements a traceable Python dictionary, that stores change history in an efficient way inside the object.
-It allows the user to:
+Matching the distribution of the latent vector into a known prior ensures that meaningful samples can be generated from any
+part of prior space.
+As a result, the decoder of the AAE learns a deep generative model that maps the imposed prior
+to the input data distribution. 
+In addition to that, the encoder of the AAE learns to encode any given input image into the given prior.
 
-1. **Trace reverions** of the dictionary's content and structure.
-2. **Roll the dictionary back** to previously stored values.
-3. **Trace the changes** between its different revisions.
-4. **Revert** unwanted changes made.
+The design of the AAE makes it usable for applications such as semi-supervised classification, disentangling style and content of the input image.
+By selecting the prior distribution of the latent vector to describe a categorial disrtribution (in part), one can use the latent features to classify the input into a set of pre-known labels.
+
+This can be highly effective for more than just dimensionality reduction (which is the common application when it comes to standard AE), and into supervised classification, semi-supervised classification and unsupervised clustering.
+
+As a result in the rest of this manual the latent vector will be divied into two parts: the **latent y** part - aimed for categorical distribution, and the **latent z** part - aimed for normal zero-centered distribution.
+
+The AAE is built from the following parts:
+
+1. **Encoder Network** usually marked with the latter *Q*, encoding the input into the latent space.
+2. **Decoder Network** usually marked with the latter *P*, decoding the latent space into an output of dimensions identical to those of the input.
+3. **Categorical Descriminator** usally makred as *D_cat*, used to decide if the latent y is categorically distributed.
+4. **Gauss Descriminator** usally makred as *D_gauss*, used to decide if the latent z is normally distributed.
 5. **Provide a meaningful id** to the revisions - such as a timestamp, or verison number.
 6. More....
 
-.. image:: _static/diff_example.jpg
+
+.. image:: _static/advesarial_autoencoder_schema.png
 
 *[1] tracing the changes in a JSON-like object*
 
 
 
-The Solution
+The Training Process
 -----
 
 There are many possible solutions to trace the changes in a dict-like object. The major differences between them is the way in which the trace history is stored.
@@ -53,8 +64,7 @@ We chose to store the trace *In-Object*. While this method is limited by the max
 
 The trace is stored as part of the dict-like structure of the document allowing **quick access** to the latest revision, while storing only diffs between revision which results in **lower memory costs**.
 
-
-Memory Performance
+Inference
 -----
 
 The In-Object trace solution we chose results stores the latest version of the dictionary, and with it two meta-fields that describe the history of the dict-like object:
