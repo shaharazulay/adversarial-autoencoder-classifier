@@ -35,54 +35,22 @@ The AAE is built from the following parts:
 The Training Process
 -----
 
-There are many possible solutions to trace the changes in a dict-like object. The major differences between them is the way in which the trace history is stored.
+The training process combines two major parts:
 
-The three main possibilities go back to:
-
-1. **In-Object** solution - where the trace is embedded into the dict-like object itself.
-2. **Out-Of-Object** solution - where the trace is stored using some additional attribute of the dict-like object.
-3. **Trace by Multiple Objects** solution - where the trace is stored by storing multiple copies of the dict-like object, usually equal to the number of known reivisions.
-
-The use of the Out-Of-Object method is not relevant in cases where the object needs to go through serializaion, such as in cases where the object needs to be stored on disk, in a database or in any other non-Python native and consistent form.
-Therefore, we chose to not address this solution as viable.
-
-We chose to focus our solution to work well for non-relational DBs, which store document JSON-like documents natively.
-The *Trace by Multiple Objects* solution would force the creation of multiple documents in the DB, possibly resulting in a high memory overhead, if objects are kept in full.
-
-However, such solution would provide quick access time for the latest revision of the document.
-A possible upgrade of this solution would be to store diffs between document revisions only, but that would possiblt result in a slower accesss time of the latest version.
-
-.. image:: _static/trace_methods.jpg
-
-*[1] In-Objecr and Multiple Objects methods for tracing the changes in a JSON-like object*
+1. **Reconstruction Loss** which measures the loss between the input and image and the reconstructed output image.
+   The reconstruction loss is part the vanilla AE training, forcing the AE to learn meaningful latent encoding as a result of forcing it to create a good reconstruction (past decoding) of the input image.
+2. **Advesarial Loss** which is part of the classic advesarial generative training (GAN), and is build from a generator and a descriminator loss.
+  In this case, there descriminator loss is the sum of two losses from the categorical and gaussian descriminators, each measuring a different part of the latent vector.
+  The generaor here is also the sum of two losses, measuring the ability of the generator (the encoder Q network) to create quailty "fake" latent features which match the expected posterior the descriminators learn to identify.
 
 
-We chose to store the trace *In-Object*. While this method is limited by the max allowed size of the document, and may not be suitable for very large documents, we found it to be the most elegant solution.
-
-The trace is stored as part of the dict-like structure of the document allowing **quick access** to the latest revision, while storing only diffs between revision which results in **lower memory costs**.
 
 Inference
 -----
 
-The In-Object trace solution we chose results stores the latest version of the dictionary, and with it two meta-fields that describe the history of the dict-like object:
+Followed the training process, the AAE is in fact a classifier as any other. 
+The inference is performed using the decoder alone (Q) and observing the latent y part of the latent features, which can provide the predicted label for a new unseen input image.
 
-1. **trace** - capturing diffs between different revisions of the dict over the different revisions.
-2. **revision** - capturing the ids of the different revision in which the dict changes.
+.. image:: _static/adversarial_autoencoder_inference.png
 
-The space performance is therefore effected directly and linearly by the dict average size, and by the number of revisions, per-key in the dict.
-
-In order to support real world memory restrictions, such as MongoDb maximum document size (16MB), the TraceableDict also support a limited "memory" if needed and can drop old revisions, allowing it to store the latest k-revision only in a cyclic manner.
-
-
-RunTime Performance
------
-
-Here are the general asymptotic bounds of expected runtime performance:
-
-1. **as_dict** - Access to the latest dict revision is done in **O(k)**, where k is the number of k
-2. **commit** - Assigning a meaningful revision id to all uncommited changes is done in **O(1)**.
-3. **revert** - Reverting all uncommited changes is done in **O(1)**.
-4. **checkout** - Rolling back to an old revision is done in **O(m + n)** where m is the number of revisions between the working tree and the desired revision, and n is the number of per-key diffs performed between the two revisions.
-5. **remove_oldest_revision** - Removing the oldest revision is done in **O(1)**.
-6. **log** - Displaying commit logs shows similar performance to *checkout* method.
-7. **diff** - Showing changes between revisions shows similar performance to *checkout* method.
+This is how the model can tested and validated, using the inference process over a pre-known validation set.
