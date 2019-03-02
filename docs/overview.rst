@@ -26,12 +26,9 @@ The AAE is built from the following parts:
 3. **Categorical Descriminator** usally makred as *D_cat*, used to decide if the latent y is categorically distributed.
 4. **Gauss Descriminator** usally makred as *D_gauss*, used to decide if the latent z is normally distributed.
 5. **Provide a meaningful id** to the revisions - such as a timestamp, or verison number.
-6. More....
 
 
 .. image:: _static/aae_schema.png
-
-*[1] tracing the changes in a JSON-like object*
 
 
 
