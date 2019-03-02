@@ -11,6 +11,10 @@ The general schema can be seen here:
 
 .. image:: _static/semi_supervised_schema.png
 
+The basic schema follows the exact implementation of VAE, with the only difference of introducing a labeled image from time to time into the training process.
+The labeled image is treated differently and is measured using a new Cross Entropy loss again the known target label.
+This loss only effect the Encoder (Q) - causing it to learn how to predict the labled images currectly over the latent y categorical label.
+
 This module implements a traceable Python dictionary, that stores change history in an efficient way inside the object.
 It allows the user to:
 
