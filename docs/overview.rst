@@ -29,7 +29,7 @@ The AAE is built from the following parts:
 6. More....
 
 
-.. image:: _static/advesarial_autoencoder_schema.png
+.. image:: _static/aae_schema.png
 
 *[1] tracing the changes in a JSON-like object*
 
