@@ -1,12 +1,12 @@
 .. include:: README.rst
 
 .. toctree::
-   :caption: Vartional AutoEncoders Overview
+   :caption: Advesarial AutoEncoders Overview
 
    overview
    
 .. toctree::
-   :caption: Semi-Supervised VAE
+   :caption: Semi-Supervised Classification with Advesarial VAE
    
    semi_supervised
   
