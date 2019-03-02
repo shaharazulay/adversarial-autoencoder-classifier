@@ -6,10 +6,14 @@
    overview
    
 .. toctree::
-   :caption: Semi-Supervised Classification with Advesarial VAE
+   :caption: Semi-Supervised Learning
    
    semi_supervised
   
+.. toctree::
+   :caption: Unsupervised Learning
+   
+   semi_supervised
 .. toctree::
    :caption: Use Examples
 
