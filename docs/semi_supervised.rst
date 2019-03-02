@@ -25,6 +25,7 @@ The Training Process
 -----
 
 The training process is divided into three major parts:
+
 1. **Auto Encoding (reconstruction)** where the Encoder-Decoder networks (Q, P) learns to encode and reconstruct the image.
 2. **Adversarial** where the encoder learns how to produce latent features y which are categorical and z which are normally distirbuted.
 3. **Semi-supervised** where the encoder learns to predict the right label for a pre-known labeled image.
