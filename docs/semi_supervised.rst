@@ -24,7 +24,7 @@ This loss only effect the Encoder (Q) - causing it to learn how to predict the l
 The Latent Features
 -----
 
-.. image:: _static/semi_supervised_latent_latent_features.png
+.. image:: _static/semi_supervised_latent_features.png
 
 This module implements a traceable Python dictionary, that stores change history in an efficient way inside the object.
 It allows the user to:
