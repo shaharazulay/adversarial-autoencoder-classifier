@@ -26,9 +26,9 @@ Shahar Azulay
 .. |Documentation| image:: _static/readthedocs_logo.jpg
 .. _Documentation: https://adversarial-autoencoder-classif.readthedocs.io/en/latest/
 
-[1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2
+*[1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2*
 
-Inspired by: https://github.com/fducau/AAE_pytorch
+*Inspired by: https://github.com/fducau/AAE_pytorch*
 
 **Usage Examples:**
 
