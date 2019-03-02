@@ -35,9 +35,10 @@ The success of the training process can be measured based on two grounds:
 **Validation accuracy** on a held out labeled validation set.
 The results of the semi-supervised model reached **94% accuracy**, which shows good performance and that the model learns the labeled part properly.
 
-.. image:: _static/semi_supervised_samples_from_all_lables.png
-
-*each column representing a predicted label for the original shown images, showcasing the high accuracy of the model*
+.. figure:: _static/semi_supervised_samples_from_all_lables.png
+  :figclass: align-center
+  
+  *each column representing a predicted label for the original displayed images, showing the high accuracy of the model*
 
 **Visual reconstruction** 
 Here we can see from visual examples that the reconstruction of an image (using the encoding-decoding pipeline) works pretty well. The reconstructed image is slightly blurry, which might be corrected with a slightly different loss function.
