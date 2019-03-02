@@ -38,7 +38,7 @@ The results of the semi-supervised model reached 94% accuracy, which shows good 
 **Visual reconstruction** 
 Here we can see from visual examples that the reconstruction of an image (using the encoding-decoding pipeline) works pretty well. The reconstructed image is slightly blurry, which might be corrected with a slightly different loss function.
 
-.. image:: _static/semi_supervised_reconstruction.png
+.. image:: _static/semi_supervised_reconstruction_1.png
 
 *an example reconstruction of an original "0" digit image*
 
