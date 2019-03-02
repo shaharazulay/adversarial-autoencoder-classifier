@@ -33,7 +33,7 @@ The training process is divided into three major parts:
 The success of the training process can be measured based on two grounds:
 
 **Validation accuracy** on a held out labeled validation set.
-The results of the semi-supervised model reached 94% accuracy, which shows good performance and that the model learns the labeled part properly.
+The results of the semi-supervised model reached **94% accuracy**, which shows good performance and that the model learns the labeled part properly.
 
 **Visual reconstruction** 
 Here we can see from visual examples that the reconstruction of an image (using the encoding-decoding pipeline) works pretty well. The reconstructed image is slightly blurry, which might be corrected with a slightly different loss function.
@@ -41,6 +41,12 @@ Here we can see from visual examples that the reconstruction of an image (using 
 .. image:: _static/semi_supervised_reconstruction_1.png
 
 *an example reconstruction of an original "0" digit image*
+
+In order to analyise the success of the adversarial part (which is focused on the latent features) we can examine the learning curve, showing the loss of the generator, and descriminator networks:
+
+.. image:: _static/semi_supervised_advesarial_learning_curve.png
+
+*the adversarial learning curve, showing the balance which is created between generator and discriminators*
 
 The Latent Features
 -----
