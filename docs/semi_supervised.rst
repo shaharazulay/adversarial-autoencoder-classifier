@@ -24,6 +24,9 @@ This loss only effect the Encoder (Q) - causing it to learn how to predict the l
 The Latent Features
 -----
 
+The adverserial training pushes the latent features to the desired distribution. The latent y part learns to behave similarly to a categorial distribution, whlie the latent z part learns to distribute as a zero-centered normal.
+
+
 .. image:: _static/semi_supervised_latent_features.png
 
 This module implements a traceable Python dictionary, that stores change history in an efficient way inside the object.
