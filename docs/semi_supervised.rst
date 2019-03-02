@@ -1,4 +1,9 @@
-Semi SuperVised VAE
+*****
+Semi Supervised VAE
+*****
+
+
+General Concept
 -----
 
 In the concept described in [1], Variational AE can be submitted to semi-supervised learning.
@@ -7,13 +12,19 @@ The adversarial autoencoder contains a simple AE at its center. The model for se
 to improve the classification performance that would be obtained by using only the labeled data.
 As in many cases, unlabeled data is more abundant and accessible. Using it as part of the adversarial AE learning, will help the encoding improve, alongside it producing better labeling.
 
-The general schema can be seen here:
+**The general schema can be seen here:**
 
 .. image:: _static/semi_supervised_schema.png
 
 The basic schema follows the exact implementation of VAE, with the only difference of introducing a labeled image from time to time into the training process.
 The labeled image is treated differently and is measured using a new Cross Entropy loss again the known target label.
-This loss only effect the Encoder (Q) - causing it to learn how to predict the labled images currectly over the latent y categorical label.
+This loss only effect the Encoder (Q) - causing it to learn how to predict the labled images currectly over the latent y categorical part.
+
+
+The Latent Features
+-----
+
+.. image:: _static/semi_supervised_latent_latent_features.png
 
 This module implements a traceable Python dictionary, that stores change history in an efficient way inside the object.
 It allows the user to:
@@ -27,7 +38,7 @@ It allows the user to:
 
 .. image:: _static/diff_example.jpg
 
-*[1]* A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2
+*[1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2*
 
 
 
