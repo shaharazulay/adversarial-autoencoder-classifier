@@ -35,10 +35,9 @@ The success of the training process can be measured based on two grounds:
 **Validation accuracy** on a held out labeled validation set.
 The results of the semi-supervised model reached **94% accuracy**, which shows good performance and that the model learns the labeled part properly.
 
-.. figure:: _static/semi_supervised_samples_from_all_lables.png
+.. image:: _static/semi_supervised_samples_from_all_lables.png
 
-  (1)::
-    *each column representing a predicted label for the original displayed images, showing the high accuracy of the model*
+*each column representing a predicted label for the original displayed images, showing the high accuracy of the model*
   
 **Visual reconstruction** 
 Here we can see from visual examples that the reconstruction of an image (using the encoding-decoding pipeline) works pretty well. The reconstructed image is slightly blurry, which might be corrected with a slightly different loss function.
@@ -58,6 +57,16 @@ The Latent Features
 
 The adverserial training pushes the latent features to the desired distribution. The latent y part learns to behave similarly to a categorial distribution, whlie the latent z part learns to distribute as a zero-centered normal.
 
+First, we can see that the latent features were trained properly, using the adversarial balance.
+
+.. image:: _static/semi_supervised_latent_z_distribution.png
+
+*the empricial distribution of the first dimension in the latent z vector, showing that the learned feature is indeed normally distributed around zero.*
+
+
+.. image:: _static/semi_supervised_latent_y_example.png
+
+*an empricial example of the value of the latent y vector, showing that the learned feature is indeed categorial, showing close to "1" only near the predicted label.*
 
 .. image:: _static/semi_supervised_latent_features.png
 
