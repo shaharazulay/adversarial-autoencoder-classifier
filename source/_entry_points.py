@@ -47,12 +47,28 @@ def train_semi_supervised_model_main(args=None):
     Q.save(os.path.join(args.dir_path, 'encoder_semi_supervised'))
     P.save(os.path.join(args.dir_path, 'decoder_semi_supervised'))
 
-    plt.plot(learning_curve)
-    plt.title('Semi-Supervised Learning Curve')
-    plt.xlabel('epoch')
-    plt.ylabel('loss')
-    plt.legend(['D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss', 'class_loss'])
-    plt.savefig((os.path.join(args.dir_path, 'semi_supervised_learning_curve.png')))
+    D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss =  zip(*learning_curve)
+
+    _save_learning_curve(
+        series=[D_loss_cat, D_loss_gauss, G_loss],
+        title='Semi-Supervised Adversarial Learning Curve',
+        legend=['D_loss_cat', 'D_loss_gauss', 'G_loss'],
+        path=os.path.join(args.dir_path, 'semi_supervised_advesarial_learning_curve.png')
+    )
+
+    _save_learning_curve(
+        series=[recon_loss],
+        title='Semi-Supervised Reconstruction Learning Curve',
+        legend=['recon_loss'],
+        path=os.path.join(args.dir_path, 'semi_supervised_reconstruction_learning_curve.png')
+    )
+
+    _save_learning_curve(
+        series=[class_loss],
+        title='Semi-Supervised Classification Learning Curve',
+        legend=['class_loss'],
+        path=os.path.join(args.dir_path, 'semi_supervised_classification_learning_curve.png')
+    )
 
 
 def train_unsupervised_model_main(args=None):
@@ -81,15 +97,38 @@ def train_unsupervised_model_main(args=None):
     P.save(os.path.join(args.dir_path, 'decoder_unsupervised'))
     P_mode_decoder.save(os.path.join(args.dir_path, 'mode_decoder_unsupervised'))
 
-    plt.plot(learning_curve)
-    plt.title('Unsupervised Learning Curve')
+    D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss = zip(*learning_curve)
+
+    _save_learning_curve(
+        series=[D_loss_cat, D_loss_gauss, G_loss],
+        title='Unsupervised Adversarial Learning Curve',
+        legend=['D_loss_cat', 'D_loss_gauss', 'G_loss'],
+        path=os.path.join(args.dir_path, 'unsupervised_advesarial_learning_curve.png')
+    )
+
+    _save_learning_curve(
+        series=[recon_loss],
+        title='Unsupervised Reconstruction Learning Curve',
+        legend=['recon_loss'],
+        path=os.path.join(args.dir_path, 'unsupervised_reconstruction_learning_curve.png')
+    )
+
+    _save_learning_curve(
+        series=[mode_cyclic_loss],
+        title='Unsupervised Cyclic Info Learning Curve',
+        legend=['mode_cyclic_loss'],
+        path=os.path.join(args.dir_path, 'unsupervised_cyclic_info_learning_curve.png')
+    )
+
+
+def _save_learning_curve(series, title, legend, path):
+    plt.figure()
+    plt.plot(zip(*series))
+    plt.title(title)
     plt.xlabel('epoch')
     plt.ylabel('loss')
-    plt.legend([
-        'D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss',
-        'mode_recon_loss', 'mode_cyclic_loss', 'mode_disentanglement_loss'
-    ])
-    plt.savefig((os.path.join(args.dir_path, 'unsupervised_learning_curve.png')))
+    plt.legend(legend)
+    plt.savefig(path)
 
 
 def _add_dir_path_to_parser(parser):
