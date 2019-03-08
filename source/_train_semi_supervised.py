@@ -11,7 +11,7 @@ from _model import Q_net, P_net, D_net_cat, D_net_gauss
 from _train_utils import *
 
 cuda = torch.cuda.is_available()
-#seed = 10
+
 
 def _train_epoch(
     models, optimizers, train_labeled_loader, train_unlabeled_loader, n_classes, z_dim):
@@ -22,7 +22,7 @@ def _train_epoch(
 
     # load models and optimizers
     P, Q, D_cat, D_gauss = models
-    P_decoder_optim, Q_encoder_optim, Q_classifier_optim, Q_regularization_optim, D_cat_optim, D_gauss_optim = optimizers
+    auto_encoder_optim, G_optim, D_optim, classifier_optim = optimizers
 
     # Set the networks in train mode (apply dropout when needed)
     train_all(P, Q, D_cat, D_gauss)
@@ -47,26 +47,24 @@ def _train_epoch(
             # Init gradients
             zero_grad_all(P, Q, D_cat, D_gauss)
 
-            #######################
-            # Reconstruction phase
-            #######################
             if not labeled:
+                #######################
+                # Reconstruction phase
+                #######################
                 latent_vec = torch.cat(Q(X), 1)
                 X_rec = P(latent_vec)
 
                 recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
 
                 recon_loss.backward()
-                P_decoder_optim.step()
-                Q_encoder_optim.step()
+                auto_encoder_optim.step()
 
                 # Init gradients
                 zero_grad_all(P, Q, D_cat, D_gauss)
 
                 #######################
-                # Regularization phase
+                # Discriminator phase
                 #######################
-                # Discriminator
                 Q.eval()
                 z_real_cat = sample_categorical(batch_size, n_classes=n_classes)
                 z_real_gauss = Variable(torch.randn(batch_size, z_dim))
@@ -85,16 +83,16 @@ def _train_epoch(
                 D_loss_gauss = - torch.mean(torch.log(D_real_gauss + epsilon) + torch.log(1 - D_fake_gauss + epsilon))
 
                 D_loss = D_loss_cat + D_loss_gauss
-                D_loss = D_loss
 
                 D_loss.backward()
-                D_cat_optim.step()
-                D_gauss_optim.step()
+                D_optim.step()
 
                 # Init gradients
                 zero_grad_all(P, Q, D_cat, D_gauss)
 
-                # Generator
+                #######################
+                # Generator phase
+                #######################
                 Q.train()
                 z_fake_cat, z_fake_gauss = Q(X)
 
@@ -102,9 +100,9 @@ def _train_epoch(
                 D_fake_gauss = D_gauss(z_fake_gauss)
 
                 G_loss = - torch.mean(torch.log(D_fake_cat + epsilon)) - torch.mean(torch.log(D_fake_gauss + epsilon))
-                G_loss = G_loss
+
                 G_loss.backward()
-                Q_regularization_optim.step()
+                G_optim.step()
 
                 # Init gradients
                 zero_grad_all(P, Q, D_cat, D_gauss)
@@ -116,7 +114,7 @@ def _train_epoch(
                 pred, _ = Q(X)
                 class_loss = F.cross_entropy(pred, target)
                 class_loss.backward()
-                Q_classifier_optim.step()
+                classifier_optim.step()
 
                 # Init gradients
                 zero_grad_all(P, Q, D_cat, D_gauss)
@@ -131,24 +129,20 @@ def _get_optimizers(models):
     P, Q, D_cat, D_gauss = models
 
     # Set learning rates
-    auto_encoder_lr = 0.0006
-    regularization_lr = 0.0008
+    auto_encoder_lr = 0.0008
+    generator_lr = 0.001
+    discriminator_lr = 0.0002
     classifier_lr = 0.001
 
     # Set optimizators
-    P_decoder_optim = optim.Adam(P.parameters(), lr=auto_encoder_lr)
-    Q_encoder_optim = optim.Adam(Q.parameters(), lr=auto_encoder_lr)
+    auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=auto_encoder_lr)
 
-    Q_regularization_optim = optim.Adam(Q.parameters(), lr=regularization_lr)
-    D_gauss_optim = optim.Adam(D_gauss.parameters(), lr=regularization_lr)
-    D_cat_optim = optim.Adam(D_cat.parameters(), lr=regularization_lr)
+    G_optim = optim.Adam(Q.parameters(), lr=generator_lr)
+    D_optim = optim.Adam(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=discriminator_lr)
 
-    Q_classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
+    classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
 
-    optimizers =\
-        P_decoder_optim, Q_encoder_optim,\
-        Q_classifier_optim,\
-        Q_regularization_optim, D_cat_optim, D_gauss_optim
+    optimizers = auto_encoder_optim, G_optim, D_optim, classifier_optim
 
     return optimizers
 
@@ -176,7 +170,6 @@ def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_
     '''
     Train the full model.
     '''
-    #torch.manual_seed(10)
     learning_curve = []
 
     models = _get_models(n_classes, z_dim)
@@ -199,9 +192,8 @@ def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_
             val_acc = classification_accuracy(Q, valid_loader)
             report_loss(
                 epoch,
-                all_losses[:-1],
-                descriptions=['D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss'])
-            print('Classification Loss: {:.3}'.format(class_loss.item()))
+                all_losses,
+                descriptions=['D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss', 'class_loss'])
             print('Train accuracy: {} %'.format(train_acc))
             print('Validation accuracy: {} %'.format(val_acc))
 
