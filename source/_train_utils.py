@@ -24,7 +24,7 @@ def sample_categorical(batch_size, n_classes=10, label=None):
      of size batch_size and # of classes n_classes
      return: torch.autograd.Variable with the sample
     '''
-    cat = np.random.randint(0, 10, batch_size)
+    cat = np.random.randint(0, n_classes, batch_size)
     cat = np.eye(n_classes)[cat].astype('float32')
     cat = torch.from_numpy(cat)
     return Variable(cat)
@@ -43,6 +43,35 @@ def classification_accuracy(Q, data_loader):
         # encoding phase
         pred = predict_labels(Q, X)
         correct += pred.eq(target.data).cpu().sum()
+
+    return 100. * correct / N
+
+def unsupervised_classification_accuracy(Q, data_loader, n_classes=10):
+    N = len(data_loader.dataset)
+
+    pred_to_true = {}
+    for _, (X, y) in enumerate(data_loader):
+
+        X.resize_(data_loader.batch_size, Q.input_size)
+
+        X, y = Variable(X), Variable(y)
+        if cuda:
+            X, y = X.cuda(), y.cuda()
+
+        y_pred = predict_labels(Q, X)
+
+        for y_true, y_hat in zip(y, y_pred):
+            pred_to_true.setdefault(y_hat.item(), {})
+            pred_to_true[y_hat.item()].setdefault(y_true.item(), 0)
+            pred_to_true[y_hat.item()][y_true.item()] += 1
+
+    correct = 0
+    for y_hat in range(n_classes):
+        try:
+            best_matching_label = max(pred_to_true[y_hat], key=pred_to_true[y_hat].get)
+            correct += pred_to_true[y_hat][best_matching_label]
+        except:
+            print "label %s in never predicted" % y_hat
 
     return 100. * correct / N
 
