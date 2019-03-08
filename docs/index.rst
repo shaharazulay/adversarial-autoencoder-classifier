@@ -4,6 +4,11 @@
    :caption: Advesarial AutoEncoders Overview
 
    overview
+ 
+.. toctree::
+   :caption: Preparing the Datasets
+   
+   init_datasets
    
 .. toctree::
    :caption: Semi-Supervised Learning
