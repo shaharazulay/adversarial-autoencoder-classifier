@@ -19,6 +19,8 @@
    :caption: Unsupervised Learning
    
    semi_supervised
+   
 .. toctree::
    :caption: Use Examples
 
+   usage_examples
