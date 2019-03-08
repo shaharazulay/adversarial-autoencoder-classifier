@@ -1,8 +1,3 @@
-*****
-Preparing the Datasets
-*****
-
-
 Overview
 -----
 
