@@ -6,7 +6,7 @@ from torch.autograd import Variable
 from matplotlib import gridspec
 import matplotlib.pyplot as plt
 
-from _train_utils import predict_labels
+from ._train_utils import predict_labels
 
 
 def show_samples_of_classes_and_reconstructions(Q, P, valid_loader, n_classes=10, z_dim=2):
