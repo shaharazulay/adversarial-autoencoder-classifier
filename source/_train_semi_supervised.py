@@ -7,8 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from _model import Q_net, P_net, D_net_cat, D_net_gauss
-from _train_utils import *
+from ._model import Q_net, P_net, D_net_cat, D_net_gauss
+from ._train_utils import *
 
 cuda = torch.cuda.is_available()
 
