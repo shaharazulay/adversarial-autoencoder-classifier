@@ -123,7 +123,7 @@ def train_unsupervised_model_main(args=None):
 
 def _save_learning_curve(series, title, legend, path):
     plt.figure()
-    plt.plot(zip(*series))
+    plt.plot(list(zip(*series)))
     plt.title(title)
     plt.xlabel('epoch')
     plt.ylabel('loss')
