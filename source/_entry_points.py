@@ -4,9 +4,8 @@ import torch
 
 import matplotlib.pyplot as plt
 
-from _data_utils import init_datasets, load_data
-from _train_semi_supervised import train as train_semi_supervised
-from _train_unsupervised import train as train_unsupervised
+from ._data_utils import init_datasets, load_data
+from ._train_semi_supervised import train as train_semi_supervised
 
 cuda = torch.cuda.is_available()
 
