@@ -23,7 +23,7 @@ def _train_epoch(
 
     # load models and optimizers
     P, Q, D_cat, D_gauss, P_mode_decoder = models
-    P_decoder_optim, Q_encoder_optim, Q_mode_encoder_optim, P_mode_decoder_optim, Q_regularization_optim, D_cat_optim, D_gauss_optim = optimizers
+    auto_encoder_optim, G_optim, D_optim, info_optim, mode_optim = optimizers
 
     # Set the networks in train mode (apply dropout when needed)
     train_all(P, Q, D_cat, D_gauss, P_mode_decoder)
@@ -52,38 +52,32 @@ def _train_epoch(
         recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
 
         recon_loss.backward()
-        P_decoder_optim.step()
-        Q_encoder_optim.step()
+        auto_encoder_optim.step()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         #######################
-        # TESTTTTTTTTTTTT
+        # Info phase
         #######################
-        # latent_y, latent_z = Q(X)
-        #
-        # mode_disentanglement_loss = 0
-        #
-        # for label_A in range(n_classes):
-        #     latent_y_A = get_categorial(label_A).expand_as(torch.zeros((batch_size, n_classes)))
-        #     latent_vec_A = torch.cat((latent_y_A, latent_z), 1)
-        #     X_mode_rec_A = P(latent_vec_A)
-        #
-        #     for label_B in range(label_A + 1, n_classes):
-        #         latent_y_B = get_categorial(label_B).expand_as(torch.zeros((batch_size, n_classes)))
-        #         latent_vec_B = torch.cat((latent_y_B, latent_z), 1)
-        #         X_mode_rec_B = P(latent_vec_B)
-        #
-        #         mode_disentanglement_loss += -F.binary_cross_entropy(X_mode_rec_A + epsilon, X_mode_rec_B.detach() + epsilon)
-        #
-        # mode_disentanglement_loss /= (n_classes * (n_classes - 1) / 2)
-        # mode_disentanglement_loss.backward()
-        # P_decoder_optim.step()
-        # Q_encoder_optim.step()
-        #
-        # # Init gradients
-        # zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
+        continuous_loss =  torch.nn.MSELoss()
+
+        latent_y, latent_z = Q(X)
+        latent_vec = torch.cat((latent_y, latent_z), 1)
+        X_rec = P(latent_vec)
+
+        latent_y_rec, latent_z_rec = Q(X_rec)
+
+        cat_info_loss = F.binary_cross_entropy(latent_y_rec, latent_y.detach())
+        gauss_info_loss = continuous_loss(latent_z_rec, latent_z.detach())
+
+        mode_cyclic_loss = 1.0 * cat_info_loss + 0.1 * gauss_info_loss
+
+        mode_cyclic_loss.backward()
+        info_optim.step()
+
+        # Init gradients
+        zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         #######################
         # Mode reconstruction phase
@@ -94,53 +88,52 @@ def _train_epoch(
         mode_recon_loss = F.binary_cross_entropy(X_mode_rec + epsilon, X + epsilon)
 
         mode_recon_loss.backward()
-        P_mode_decoder_optim.step()
-        Q_mode_encoder_optim.step()
+        mode_optim.step()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         #######################
         # Mode cyclic phase
-        #######################
-        Q.eval()
-
-        latent_y, _ = Q(X)
-        X_mode_rec = P_mode_decoder(latent_y)
-
-        latent_mode_cylic_y, _ = Q(X_mode_rec)
-        mode_cyclic_loss = 10 * F.binary_cross_entropy(latent_y, latent_mode_cylic_y.detach())  # NOTE: *10 is here
-
-        mode_cyclic_loss.backward()
-        P_mode_decoder_optim.step()
-
-        # Init gradients
-        zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
+        # #######################
+        # Q.eval()
+        #
+        # latent_y, _ = Q(X)
+        # X_mode_rec = P_mode_decoder(latent_y)
+        #
+        # latent_mode_cylic_y, _ = Q(X_mode_rec)
+        # mode_cyclic_loss = 10 * F.binary_cross_entropy(latent_y, latent_mode_cylic_y.detach())  # NOTE: *10 is here
+        #
+        # mode_cyclic_loss.backward()
+        # P_mode_decoder_optim.step()
+        #
+        # # Init gradients
+        # zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         #######################
         # Mode disentanglement phase
         #######################
-        mode_disentanglement_loss = 0
-
-        for label_A in range(n_classes):
-            latent_y_A = get_categorial(label_A)
-            X_mode_rec_A = P_mode_decoder(latent_y_A)
-
-            for label_B in range(label_A + 1, n_classes):
-                latent_y_B = get_categorial(label_B)
-                X_mode_rec_B = P_mode_decoder(latent_y_B)
-
-                mode_disentanglement_loss += -F.binary_cross_entropy(X_mode_rec_A + epsilon, X_mode_rec_B.detach() + epsilon)
-
-        mode_disentanglement_loss /= (n_classes * (n_classes - 1) / 2)
-        mode_disentanglement_loss.backward()
-        P_mode_decoder_optim.step()
-
-        # Init gradients
-        zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
+        # mode_disentanglement_loss = 0
+        #
+        # for label_A in range(n_classes):
+        #     latent_y_A = get_categorial(label_A)
+        #     X_mode_rec_A = P_mode_decoder(latent_y_A)
+        #
+        #     for label_B in range(label_A + 1, n_classes):
+        #         latent_y_B = get_categorial(label_B)
+        #         X_mode_rec_B = P_mode_decoder(latent_y_B)
+        #
+        #         mode_disentanglement_loss += -F.binary_cross_entropy(X_mode_rec_A + epsilon, X_mode_rec_B.detach() + epsilon)
+        #
+        # mode_disentanglement_loss /= (n_classes * (n_classes - 1) / 2)
+        # mode_disentanglement_loss.backward()
+        # P_mode_decoder_optim.step()
+        #
+        # # Init gradients
+        # zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         #######################
-        # Regularization phase
+        # Generator phase
         #######################
         z_real_cat = sample_categorical(batch_size, n_classes=n_classes)
         z_real_gauss = Variable(torch.randn(batch_size, z_dim))
@@ -148,7 +141,23 @@ def _train_epoch(
             z_real_cat = z_real_cat.cuda()
             z_real_gauss = z_real_gauss.cuda()
 
-        # Discriminator
+        Q.train()
+        z_fake_cat, z_fake_gauss = Q(X)
+
+        D_fake_cat = D_cat(z_fake_cat)
+        D_fake_gauss = D_gauss(z_fake_gauss)
+
+        G_loss = - torch.mean(torch.log(D_fake_cat + epsilon)) - torch.mean(torch.log(D_fake_gauss + epsilon))
+
+        G_loss.backward()
+        G_optim.step()
+
+        # Init gradients
+        zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
+
+        #######################
+        # Discriminator phase
+        #######################
         Q.eval()
         z_fake_cat, z_fake_gauss = Q(X)
 
@@ -163,26 +172,16 @@ def _train_epoch(
         D_loss = D_loss_cat + D_loss_gauss
 
         D_loss.backward()
-        D_cat_optim.step()
-        D_gauss_optim.step()
+        D_optim.step()
 
-        # Init gradients
-        zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
-
-        # Generator
         Q.train()
-        z_fake_cat, z_fake_gauss = Q(X)
-
-        D_fake_cat = D_cat(z_fake_cat)
-        D_fake_gauss = D_gauss(z_fake_gauss)
-
-        G_loss = - torch.mean(torch.log(D_fake_cat + epsilon)) - torch.mean(torch.log(D_fake_gauss + epsilon))
-
-        G_loss.backward()
-        Q_regularization_optim.step()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
+
+        ### REMOVEEEEEEEEEEEEEEEEEEE
+        mode_disentanglement_loss = torch.tensor([0.0]) #############
+        ###########3
 
         # report progress
         # report_loss(
@@ -190,6 +189,7 @@ def _train_epoch(
         #     all_losses=(D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss),
         #     descriptions=['D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss', 'mode_recon_loss', 'mode_cyclic_loss', 'mode_disentanglement_loss'])
         report_progress(float(batch_num) / n_batches)
+
 
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss
 
@@ -201,25 +201,22 @@ def _get_optimizers(models):
     P, Q, D_cat, D_gauss, P_mode_decoder = models
 
     # Set learning rates
-    auto_encoder_lr = 0.0006
-    regularization_lr = 0.0008
-    classifier_lr = 0.0001
+    auto_encoder_lr = 0.0008
+    generator_lr = 0.001
+    discriminator_lr = 0.0002
+    info_lr = 0.0002
+    mode_lr = 0.0008
 
     # Set optimizators
-    P_decoder_optim = optim.Adam(P.parameters(), lr=auto_encoder_lr)
-    Q_encoder_optim = optim.Adam(Q.parameters(), lr=auto_encoder_lr)
+    auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=auto_encoder_lr)
 
-    P_mode_decoder_optim = optim.Adam(P_mode_decoder.parameters(), lr=classifier_lr)
-    Q_mode_encoder_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
+    G_optim = optim.Adam(Q.parameters(), lr=generator_lr)
+    D_optim = optim.Adam(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=discriminator_lr)
 
-    Q_regularization_optim = optim.Adam(Q.parameters(), lr=regularization_lr)
-    D_gauss_optim = optim.Adam(D_gauss.parameters(), lr=regularization_lr)
-    D_cat_optim = optim.Adam(D_cat.parameters(), lr=regularization_lr)
+    info_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=info_lr)
+    mode_optim = optim.Adam(itertools.chain(Q.parameters(), P_mode_decoder.parameters()), lr=mode_lr)
 
-    optimizers =\
-        P_decoder_optim, Q_encoder_optim,\
-        Q_mode_encoder_optim, P_mode_decoder_optim,\
-        Q_regularization_optim, D_cat_optim, D_gauss_optim
+    optimizers = auto_encoder_optim, G_optim, D_optim, info_optim, mode_optim
 
     return optimizers
 
@@ -268,13 +265,13 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
         learning_curve.append(all_losses)
 
         if epoch % 1 == 0:
-            val_acc = classification_accuracy(Q, valid_loader)
+            val_acc = unsupervised_classification_accuracy(Q, valid_loader, n_classes=n_classes)
             report_loss(
                 epoch,
                 all_losses,
                 descriptions=[
                     'D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss',
                     'mode_recon_loss', 'mode_cyclic_loss', 'mode_disentanglement_loss'])
-            print('Validation accuracy: {} %'.format(val_acc))
+            print('Unsupervised classification accuracy: {} %'.format(val_acc))
 
     return Q, P, P_mode_decoder, learning_curve
