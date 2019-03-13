@@ -1,13 +1,26 @@
 .. include:: README.rst
 
 .. toctree::
-   :caption: Overview
+   :caption: Advesarial AutoEncoders Overview
 
-  
+   overview
+ 
 .. toctree::
-   :caption: Basic Examples
+   :caption: Preparing the Datasets
    
+   init_datasets
+   
+.. toctree::
+   :caption: Semi-Supervised Learning
+   
+   semi_supervised
   
 .. toctree::
-   :caption: Advanced Use Cases
+   :caption: Unsupervised Learning
+   
+   semi_supervised
+   
+.. toctree::
+   :caption: Use Examples
 
+   usage_examples
