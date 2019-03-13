@@ -60,8 +60,8 @@ def load_data(data_path, batch_size, **kwargs):
 
     valid_loader = DataLoader(validset, batch_size=batch_size, shuffle=True)
 
-    print "dataset size in use: %s [labeled trainset]  %s [un-labeled trainset]  %s [validation]"    % (
-        len(trainset_labeled), len(trainset_unlabeled), len(validset))
+    print("dataset size in use: %s [labeled trainset]  %s [un-labeled trainset]  %s [validation]"    % (
+        len(trainset_labeled), len(trainset_unlabeled), len(validset)))
     return train_labeled_loader, train_unlabeled_loader, valid_loader
 
 

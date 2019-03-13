@@ -243,7 +243,7 @@ def unsupervised_accuracy_score(Q, valid_loader, n_classes=10):
         n_samples = sum(true_to_pred[y_true].values())
         best_match_label = max(true_to_pred[y_true], key=true_to_pred[y_true].get)
         n_highest_match = true_to_pred[y_true][best_match_label]
-        print "Label {}: {}%, Best matching label; {}".format(y_true, 100.0 * n_highest_match / n_samples, best_match_label)
+        print("Label {}: {}%, Best matching label; {}".format(y_true, 100.0 * n_highest_match / n_samples, best_match_label))
 
 
     correct = 0
@@ -255,12 +255,12 @@ def unsupervised_accuracy_score(Q, valid_loader, n_classes=10):
             correct += pred_to_true[y_hat][label_mapping[y_hat]]
             wrong += sum([v for  k, v in pred_to_true[y_hat].iteritems() if k != label_mapping[y_hat]])
         except:
-            print "label %s in never predicted" % y_hat
+            print("label %s in never predicted" % y_hat)
 
-    print "ACCURACY: %.2f%%" % (float(correct) / (wrong + correct))
+    print("ACCURACY: %.2f%%" % (float(correct) / (wrong + correct)))
 
-    print label_mapping
-    print pred_to_true
+    print(label_mapping)
+    print(pred_to_true)
     return true_to_pred
 
 
@@ -284,8 +284,8 @@ train_labeled_loader, train_unlabeled_loader, valid_loader = _data_utils.load_da
     data_path='../data', batch_size=100, **kwargs)
 
 plot_latent_distribution(P, valid_loader)
-print plot_predicted_label_distribution(P, valid_loader, n_classes=n_classes)
-print unsupervised_accuracy_score(Q, valid_loader, n_classes=n_classes)
+print(plot_predicted_label_distribution(P, valid_loader, n_classes=n_classes))
+print(unsupervised_accuracy_score(Q, valid_loader, n_classes=n_classes))
 show_learned_latent_features(P, n_classes=n_classes, z_dim=z_dim)
 show_all_learned_modes(P_mode_decoder, n_classes=n_classes)
 show_samples_of_classes_and_reconstructions(Q, P, valid_loader, n_classes=n_classes, z_dim=z_dim)
