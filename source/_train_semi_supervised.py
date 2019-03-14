@@ -166,7 +166,7 @@ def _get_models(n_classes, z_dim):
     return models
 
 
-def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
+def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output_dir):
     '''
     Train the full model.
     '''
@@ -193,7 +193,8 @@ def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_
             report_loss(
                 epoch,
                 all_losses,
-                descriptions=['D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss', 'class_loss'])
+                descriptions=['D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss', 'class_loss'],
+                output_dir=output_dir)
             print('Train accuracy: {} %'.format(train_acc))
             print('Validation accuracy: {} %'.format(val_acc))
 

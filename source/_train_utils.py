@@ -1,3 +1,4 @@
+import os
 import sys
 import torch
 from torch.autograd import Variable
@@ -84,7 +85,7 @@ def train_all(*models):
 def eval_all(*models):
     [m.eval() for m in models]
 
-def report_loss(epoch, all_losses, descriptions):
+def report_loss(epoch, all_losses, descriptions, output_dir=None):
     '''
     Print loss.
     '''
@@ -92,6 +93,10 @@ def report_loss(epoch, all_losses, descriptions):
 
     for loss, desc in zip(all_losses, descriptions):
         base_loss_report += '{}: {:.4}; '.format(desc, loss.item())
+
+    if output_dir:
+        with open(os.path.join(output_dir, 'loss_report.txt'), 'a') as f_report:
+            f_report.write(base_loss_report)
 
     print(base_loss_report)
 

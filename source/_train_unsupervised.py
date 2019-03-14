@@ -243,7 +243,7 @@ def _get_models(n_classes, z_dim):
     return models
 
 
-def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
+def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output_dir):
     '''
     Train the full model.
     '''
@@ -266,12 +266,14 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim):
 
         if epoch % 1 == 0:
             val_acc = unsupervised_classification_accuracy(Q, valid_loader, n_classes=n_classes)
+
             report_loss(
                 epoch,
                 all_losses,
                 descriptions=[
                     'D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss',
-                    'mode_recon_loss', 'mode_cyclic_loss', 'mode_disentanglement_loss'])
+                    'mode_recon_loss', 'mode_cyclic_loss', 'mode_disentanglement_loss'],
+                output_dir=output_dir)
             print('Unsupervised classification accuracy: {} %'.format(val_acc))
 
     return Q, P, P_mode_decoder, learning_curve

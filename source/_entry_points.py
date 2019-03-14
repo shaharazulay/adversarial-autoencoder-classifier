@@ -1,6 +1,7 @@
 import os
 import argparse
 import torch
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 
@@ -26,6 +27,7 @@ def train_semi_supervised_model_main(args=None):
         description='Train the full model [semi-supervised] and store on disk.')
 
     _add_dir_path_to_parser(parser)
+    _add_output_dir_path_to_parser(parser)
     _add_batch_size_to_parser(parser)
     _add_epochs_to_parser(parser)
     _add_n_classes_to_parser(parser)
@@ -36,16 +38,20 @@ def train_semi_supervised_model_main(args=None):
 
     train_labeled_loader, train_unlabeled_loader, valid_loader = load_data(
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
+
+    _make_dir_if_not_exists(args.output_dir_path)
+
     Q, P, learning_curve = train_semi_supervised(
         train_labeled_loader,
         train_unlabeled_loader,
         valid_loader,
         epochs=args.n_epochs,
         n_classes=args.n_classes,
-        z_dim=args.z_size)
+        z_dim=args.z_size,
+        output_dir=args.output_dir_path)
 
-    Q.save(os.path.join(args.dir_path, 'encoder_semi_supervised'))
-    P.save(os.path.join(args.dir_path, 'decoder_semi_supervised'))
+    Q.save(os.path.join(args.output_dir_path, 'encoder_semi_supervised'))
+    P.save(os.path.join(args.output_dir_path, 'decoder_semi_supervised'))
 
     D_loss_cat, D_loss_gauss, G_loss, recon_loss, class_loss =  zip(*learning_curve)
 
@@ -53,21 +59,21 @@ def train_semi_supervised_model_main(args=None):
         series=[D_loss_cat, D_loss_gauss, G_loss],
         title='Semi-Supervised Adversarial Learning Curve',
         legend=['D_loss_cat', 'D_loss_gauss', 'G_loss'],
-        path=os.path.join(args.dir_path, 'semi_supervised_advesarial_learning_curve.png')
+        path=os.path.join(args.output_dir_path, 'semi_supervised_advesarial_learning_curve.png')
     )
 
     _save_learning_curve(
         series=[recon_loss],
         title='Semi-Supervised Reconstruction Learning Curve',
         legend=['recon_loss'],
-        path=os.path.join(args.dir_path, 'semi_supervised_reconstruction_learning_curve.png')
+        path=os.path.join(args.output_dir_path, 'semi_supervised_reconstruction_learning_curve.png')
     )
 
     _save_learning_curve(
         series=[class_loss],
         title='Semi-Supervised Classification Learning Curve',
         legend=['class_loss'],
-        path=os.path.join(args.dir_path, 'semi_supervised_classification_learning_curve.png')
+        path=os.path.join(args.output_dir_path, 'semi_supervised_classification_learning_curve.png')
     )
 
 
@@ -76,6 +82,7 @@ def train_unsupervised_model_main(args=None):
         description='Train the full model [un-supervised!] and store on disk.')
 
     _add_dir_path_to_parser(parser)
+    _add_output_dir_path_to_parser(parser)
     _add_batch_size_to_parser(parser)
     _add_epochs_to_parser(parser)
     _add_n_classes_to_parser(parser)
@@ -86,16 +93,20 @@ def train_unsupervised_model_main(args=None):
 
     train_labeled_loader, train_unlabeled_loader, valid_loader = load_data(
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
+
+    _make_dir_if_not_exists(args.output_dir_path)
+
     Q, P, P_mode_decoder, learning_curve = train_unsupervised(
         train_unlabeled_loader,
         valid_loader,
         epochs=args.n_epochs,
         n_classes=args.n_classes,
-        z_dim=args.z_size)
+        z_dim=args.z_size,
+        output_dir=args.output_dir_path)
 
-    Q.save(os.path.join(args.dir_path, 'encoder_unsupervised'))
-    P.save(os.path.join(args.dir_path, 'decoder_unsupervised'))
-    P_mode_decoder.save(os.path.join(args.dir_path, 'mode_decoder_unsupervised'))
+    Q.save(os.path.join(args.output_dir_path, 'encoder_unsupervised'))
+    P.save(os.path.join(args.output_dir_path, 'decoder_unsupervised'))
+    P_mode_decoder.save(os.path.join(args.output_dir_path, 'mode_decoder_unsupervised'))
 
     D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss = zip(*learning_curve)
 
@@ -103,21 +114,21 @@ def train_unsupervised_model_main(args=None):
         series=[D_loss_cat, D_loss_gauss, G_loss],
         title='Unsupervised Adversarial Learning Curve',
         legend=['D_loss_cat', 'D_loss_gauss', 'G_loss'],
-        path=os.path.join(args.dir_path, 'unsupervised_advesarial_learning_curve.png')
+        path=os.path.join(args.output_dir_path, 'unsupervised_advesarial_learning_curve.png')
     )
 
     _save_learning_curve(
         series=[recon_loss],
         title='Unsupervised Reconstruction Learning Curve',
         legend=['recon_loss'],
-        path=os.path.join(args.dir_path, 'unsupervised_reconstruction_learning_curve.png')
+        path=os.path.join(args.output_dir_path, 'unsupervised_reconstruction_learning_curve.png')
     )
 
     _save_learning_curve(
         series=[mode_cyclic_loss],
         title='Unsupervised Cyclic Info Learning Curve',
         legend=['mode_cyclic_loss'],
-        path=os.path.join(args.dir_path, 'unsupervised_cyclic_info_learning_curve.png')
+        path=os.path.join(args.output_dir_path, 'unsupervised_cyclic_info_learning_curve.png')
     )
 
 
@@ -130,13 +141,19 @@ def _save_learning_curve(series, title, legend, path):
     plt.legend(legend)
     plt.savefig(path)
 
-
 def _add_dir_path_to_parser(parser):
     parser.add_argument(
         '--dir-path',
         dest='dir_path',
         required=True,
         help='Path of the data directory')
+
+def _add_output_dir_path_to_parser(parser):
+    parser.add_argument(
+        '--output-dir-path',
+        dest='output_dir_path',
+        default=os.path.join('out', str(datetime.now())),
+        help='Path of the output directory')
 
 def _add_batch_size_to_parser(parser):
     parser.add_argument(
@@ -169,3 +186,7 @@ def _add_z_gauss_size_to_parser(parser):
         type=int,
         default=5,
         help='Number of nodes used by the latent gauss distributed z encoding (default: 5)')
+
+def _make_dir_if_not_exists(dir_):
+    if not os.path.exists(dir_):
+        os.makedirs(dir_)
