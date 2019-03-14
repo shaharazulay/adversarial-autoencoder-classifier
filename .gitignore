@@ -1,6 +1,7 @@
 build
 dist
 data
+out
 *.pyc
 *.sw?
 */__pycache__
