@@ -1,0 +1,19 @@
+# unsupervised learning configurations
+unsupervised:
+  learning_rates:
+    auto_encoder_lr: 0.0008
+    generator_lr: 0.001
+    discriminator_lr: 0.0002
+    info_lr: 0.0002
+    mode_lr: 0.0008
+  model:
+    use_mutual_info: True
+    use_mode_decoder: True
+
+# sem-supervised learning configurations
+semi_supervised:
+  learning_rates:
+    auto_encoder_lr: 0.0008
+    generator_lr: 0.001
+    discriminator_lr: 0.0002
+    classifier_lr: 0.001

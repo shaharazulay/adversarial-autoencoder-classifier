@@ -3,7 +3,7 @@ import argparse
 import torch
 from datetime import datetime
 
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 
 from ._data_utils import init_datasets, load_data
 from ._train_semi_supervised import train as train_semi_supervised
