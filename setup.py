@@ -43,8 +43,8 @@ setup(
     long_description=open('docs/README.rst').read(),
     install_requires=[],
     zip_safe=False,
-    package_data={},
-    include_package_data=True,
+    package_dir={'source':'source'},
+    package_data={'source': ['*.yml']},
     cmdclass={
         'test': _TestCommand,
     },
