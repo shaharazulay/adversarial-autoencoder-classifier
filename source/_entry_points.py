@@ -210,5 +210,5 @@ def _load_configuration(path):
 
 def _save_current_configration(config_dict, dir_):
     with open(os.path.join(dir_, 'config.yml'), 'w') as f_cfg:
-        dump = yaml.dump(config_dict)
+        dump = yaml.dump(config_dict, default_flow_style=False)
         f_cfg.write(dump)
