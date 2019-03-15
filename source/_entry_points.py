@@ -1,6 +1,7 @@
 import os
 import argparse
 import torch
+import yaml
 from datetime import datetime
 
 from matplotlib import pyplot as plt
@@ -83,6 +84,7 @@ def train_unsupervised_model_main(args=None):
 
     _add_dir_path_to_parser(parser)
     _add_output_dir_path_to_parser(parser)
+    _add_configuration_path_to_parser(parser)
     _add_batch_size_to_parser(parser)
     _add_epochs_to_parser(parser)
     _add_n_classes_to_parser(parser)
@@ -95,6 +97,7 @@ def train_unsupervised_model_main(args=None):
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
 
     _make_dir_if_not_exists(args.output_dir_path)
+    config = _load_configuration(args.config_path)['unsupervised']
 
     Q, P, P_mode_decoder, learning_curve = train_unsupervised(
         train_unlabeled_loader,
@@ -102,7 +105,8 @@ def train_unsupervised_model_main(args=None):
         epochs=args.n_epochs,
         n_classes=args.n_classes,
         z_dim=args.z_size,
-        output_dir=args.output_dir_path)
+        output_dir=args.output_dir_path,
+        config_dict=config)
 
     Q.save(os.path.join(args.output_dir_path, 'encoder_unsupervised'))
     P.save(os.path.join(args.output_dir_path, 'decoder_unsupervised'))
@@ -131,6 +135,7 @@ def train_unsupervised_model_main(args=None):
         path=os.path.join(args.output_dir_path, 'unsupervised_cyclic_info_learning_curve.png')
     )
 
+    _save_current_configration(config_dict, args.output_dir_path)
 
 def _save_learning_curve(series, title, legend, path):
     plt.figure()
@@ -152,8 +157,15 @@ def _add_output_dir_path_to_parser(parser):
     parser.add_argument(
         '--output-dir-path',
         dest='output_dir_path',
-        default=os.path.join('out', str(datetime.now())),
+        default=os.path.join('out', datetime.now().strftime("%Y-%m-%d-%H:%M:%S")),
         help='Path of the output directory')
+
+def _add_configuration_path_to_parser(parser):
+    parser.add_argument(
+        '--config-path',
+        dest='config_path',
+        default='source/_config.yml',
+        help='Path of the configuration YAML file (default: local default configuration)')
 
 def _add_batch_size_to_parser(parser):
     parser.add_argument(
@@ -190,3 +202,12 @@ def _add_z_gauss_size_to_parser(parser):
 def _make_dir_if_not_exists(dir_):
     if not os.path.exists(dir_):
         os.makedirs(dir_)
+
+def _load_configuration(path):
+    with open(path, 'r') as f_cfg:
+        config = yaml.load(f_cfg)
+    return config
+
+def _save_current_configration(config_dict, dir_):
+    with open(os.path.join(dir_, 'config.yml'), 'w') as f_cfg:
+        yaml.dump(f_cfg)

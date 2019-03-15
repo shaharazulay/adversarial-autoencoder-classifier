@@ -15,7 +15,7 @@ seed = 10
 
 
 def _train_epoch(
-    models, optimizers, train_unlabeled_loader, n_classes, z_dim):
+    models, optimizers, train_unlabeled_loader, n_classes, z_dim, config_dict):
     '''
     Train procedure for one epoch.
     '''
@@ -194,18 +194,20 @@ def _train_epoch(
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss
 
 
-def _get_optimizers(models):
+def _get_optimizers(models, config_dict):
     '''
     Set and return all relevant optimizers needed for the training process.
     '''
     P, Q, D_cat, D_gauss, P_mode_decoder = models
 
     # Set learning rates
-    auto_encoder_lr = 0.0008
-    generator_lr = 0.001
-    discriminator_lr = 0.0002
-    info_lr = 0.0002
-    mode_lr = 0.0008
+    learning_rates = config_dict['learning_rates']
+
+    auto_encoder_lr = learning_rates['auto_encoder_lr']
+    generator_lr = learning_rates['generator_lr']
+    discriminator_lr = learning_rates['discriminator_lr']
+    info_lr = learning_rates['info_lr']
+    mode_lr = learning_rates['mode_lr']
 
     # Set optimizators
     auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=auto_encoder_lr)
@@ -220,7 +222,7 @@ def _get_optimizers(models):
 
     return optimizers
 
-def _get_models(n_classes, z_dim):
+def _get_models(n_classes, z_dim, config_dict):
     '''
     Set and return all sub-modules that comprise the full model.
     '''
@@ -243,15 +245,15 @@ def _get_models(n_classes, z_dim):
     return models
 
 
-def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output_dir):
+def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output_dir, config_dict):
     '''
     Train the full model.
     '''
     #torch.manual_seed(10)
     learning_curve = []
 
-    models = _get_models(n_classes, z_dim)
-    optimizers = _get_optimizers(models)
+    models = _get_models(n_classes, z_dim, config_dict)
+    optimizers = _get_optimizers(models, config_dict)
     P, Q, D_cat, D_gauss, P_mode_decoder = models
 
     for epoch in range(epochs):
@@ -260,7 +262,8 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
             optimizers,
             train_unlabeled_loader,
             n_classes,
-            z_dim)
+            z_dim,
+            config_dict)
 
         learning_curve.append(all_losses)
 
