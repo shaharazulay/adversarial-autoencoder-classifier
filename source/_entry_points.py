@@ -97,7 +97,7 @@ def train_unsupervised_model_main(args=None):
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
 
     _make_dir_if_not_exists(args.output_dir_path)
-    config = _load_configuration(args.config_path)['unsupervised']
+    config_dict = _load_configuration(args.config_path)['unsupervised']
 
     Q, P, P_mode_decoder, learning_curve = train_unsupervised(
         train_unlabeled_loader,
@@ -106,7 +106,7 @@ def train_unsupervised_model_main(args=None):
         n_classes=args.n_classes,
         z_dim=args.z_size,
         output_dir=args.output_dir_path,
-        config_dict=config)
+        config_dict=config_dict)
 
     Q.save(os.path.join(args.output_dir_path, 'encoder_unsupervised'))
     P.save(os.path.join(args.output_dir_path, 'decoder_unsupervised'))
