@@ -3,10 +3,13 @@ from collections import Counter
 import torch
 from torch.autograd import Variable
 
+import matplotlib
+matplotlib.use("TKAgg")
+
 from matplotlib import gridspec
 import matplotlib.pyplot as plt
 
-from ._train_utils import predict_labels
+from _train_utils import predict_labels
 
 
 def show_samples_of_classes_and_reconstructions(Q, P, valid_loader, n_classes=10, z_dim=2):
@@ -104,7 +107,7 @@ def plot_latent_distribution(P, valid_loader):
     batch_size = valid_loader.batch_size
     labels = []
 
-    _, (X, y) = enumerate(valid_loader).next()  # take first batch
+    _, (X, y) = next(enumerate(valid_loader))  # take first batch
     X.resize_(batch_size, Q.input_size)
 
     X, y = Variable(X), Variable(y)
@@ -270,7 +273,7 @@ from _model import Q_net, P_net
 mode = 'unsupervised'
 data_dir = '../data'
 #data_dir = '../data/2.3 10:40AM'
-n_classes = 16
+n_classes = 10
 z_dim = 2
 
 Q = Q_net().load(os.path.join(data_dir, 'encoder_{}'.format(mode)), z_size=z_dim, n_classes=n_classes)
