@@ -4,6 +4,9 @@ import torch
 import yaml
 from datetime import datetime
 
+import matplotlib
+matplotlib.use("TKAgg")
+
 from matplotlib import pyplot as plt
 
 from ._data_utils import init_datasets, load_data
@@ -41,6 +44,7 @@ def train_semi_supervised_model_main(args=None):
         data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
 
     _make_dir_if_not_exists(args.output_dir_path)
+    config_dict = _load_configuration(args.config_path)['semi_supervised']
 
     Q, P, learning_curve = train_semi_supervised(
         train_labeled_loader,
@@ -49,7 +53,8 @@ def train_semi_supervised_model_main(args=None):
         epochs=args.n_epochs,
         n_classes=args.n_classes,
         z_dim=args.z_size,
-        output_dir=args.output_dir_path)
+        output_dir=args.output_dir_path,
+        config_dict=config_dict)
 
     Q.save(os.path.join(args.output_dir_path, 'encoder_semi_supervised'))
     P.save(os.path.join(args.output_dir_path, 'decoder_semi_supervised'))
@@ -76,6 +81,8 @@ def train_semi_supervised_model_main(args=None):
         legend=['class_loss'],
         path=os.path.join(args.output_dir_path, 'semi_supervised_classification_learning_curve.png')
     )
+
+    _save_current_configration(config_dict, args.output_dir_path)
 
 
 def train_unsupervised_model_main(args=None):
