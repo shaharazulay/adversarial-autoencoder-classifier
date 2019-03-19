@@ -15,7 +15,7 @@ class BaseModel(nn.Module):
     @classmethod
     def load(cls, path, *args, **kwargs):
         model = cls(*args, **kwargs)
-        model.load_state_dict(torch.load(path))
+        model.load_state_dict(torch.load(path, map_location='cpu'))
         model.eval()
         return model
 

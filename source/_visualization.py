@@ -270,8 +270,8 @@ def unsupervised_accuracy_score(Q, valid_loader, n_classes=10):
 import os
 from _model import Q_net, P_net
 
-mode = 'unsupervised'
-data_dir = '../data'
+mode = 'semi_supervised'
+data_dir = '../out/results/supervised_200_epochs_94_per_acc/'
 #data_dir = '../data/2.3 10:40AM'
 n_classes = 10
 z_dim = 2
