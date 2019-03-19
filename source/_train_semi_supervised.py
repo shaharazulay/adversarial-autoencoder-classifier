@@ -147,18 +147,18 @@ def _get_optimizers(models, config_dict, decay=1.0):
     classifier_lr = learning_rates['classifier_lr'] * decay
 
     # Set optimizators
-    # auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=auto_encoder_lr)
-    #
-    # G_optim = optim.Adam(Q.parameters(), lr=generator_lr)
-    # D_optim = optim.Adam(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=discriminator_lr)
-    #
-    # classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
+    auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=auto_encoder_lr)
+
+    G_optim = optim.Adam(Q.parameters(), lr=generator_lr)
+    D_optim = optim.Adam(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=discriminator_lr)
+
+    classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
 
     ###
-    auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.1 * decay, momentum=0.9)
-    G_optim = optim.SGD(Q.parameters(), lr=0.1 * decay, momentum=0.1)
-    D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.01 * decay, momentum=0.9)
-    classifier_optim = optim.SGD(Q.parameters(), lr=0.1 * decay, momentum=0.9)
+    # auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.1 * decay, momentum=0.9)
+    # G_optim = optim.SGD(Q.parameters(), lr=0.1 * decay, momentum=0.1)
+    # D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.01 * decay, momentum=0.9)
+    # classifier_optim = optim.SGD(Q.parameters(), lr=0.1 * decay, momentum=0.9)
     ###
     optimizers = auto_encoder_optim, G_optim, D_optim, classifier_optim
 
@@ -197,7 +197,8 @@ def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_
     P, Q, D_cat, D_gauss = models
 
     for epoch in range(epochs):
-        optimizers = _get_optimizers(models, config_dict, decay=10 ** (-(epoch // 50)))
+        if epoch == 50:
+            optimizers = _get_optimizers(models, config_dict, decay=0.1)
 
         all_losses = _train_epoch(
             models,
