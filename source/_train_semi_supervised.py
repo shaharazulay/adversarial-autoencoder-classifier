@@ -45,7 +45,7 @@ def _train_epoch(
 
             X.resize_(batch_size, Q.input_size)
 
-            Xn = X#add_noise(X) ###
+            Xn = add_noise(X) ###
 
             X, Xn, target = Variable(X), Variable(Xn), Variable(target)
             if cuda:
@@ -157,7 +157,7 @@ def _get_optimizers(models, config_dict):
     ###
     auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.01, momentum=0.9)
     G_optim = optim.SGD(Q.parameters(), lr=0.1, momentum=0.1)
-    D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.1, momentum=0.9)
+    D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.01, momentum=0.9)
     classifier_optim = optim.SGD(Q.parameters(), lr=0.1, momentum=0.9)
     ###
     optimizers = auto_encoder_optim, G_optim, D_optim, classifier_optim
