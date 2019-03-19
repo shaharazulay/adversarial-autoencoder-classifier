@@ -226,13 +226,15 @@ def _get_models(n_classes, z_dim, config_dict):
     '''
     Set and return all sub-modules that comprise the full model.
     '''
-    Q = Q_net(z_size=z_dim, n_classes=n_classes)
-    P = P_net(z_size=z_dim, n_classes=n_classes)
-    D_cat = D_net_cat(n_classes=n_classes)
-    D_gauss = D_net_gauss(z_size=z_dim)
+    model_params = config_dict['model']
+
+    Q = Q_net(z_size=z_dim, n_classes=n_classes, hidden_size=model_params['hidden_size'])
+    P = P_net(z_size=z_dim, n_classes=n_classes, hidden_size=model_params['hidden_size'])
+    D_cat = D_net_cat(n_classes=n_classes, hidden_size=model_params['hidden_size'])
+    D_gauss = D_net_gauss(z_size=z_dim, hidden_size=model_params['hidden_size'])
 
     # Introducing the new Mode-decoder (it only gets the mode latent y)
-    P_mode_decoder = P_net(z_size=0, n_classes=n_classes)
+    P_mode_decoder = P_net(z_size=0, n_classes=n_classes, hidden_size=model_params['hidden_size'])
 
     if cuda:
         Q = Q.cuda()
