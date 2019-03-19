@@ -16,7 +16,7 @@ def min_max_normalization(tensor, min_value, max_value):
 
 default_transform = transforms.Compose([
     transforms.ToTensor(),
-    transforms.Lambda(lambda tensor:min_max_normalization(tensor, 0, 1))
+    #transforms.Lambda(lambda tensor:min_max_normalization(tensor, 0, 1))
     #transforms.Normalize((0.1307,), (0.3081,))
     ])
 
