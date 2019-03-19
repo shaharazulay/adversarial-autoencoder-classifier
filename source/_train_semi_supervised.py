@@ -45,11 +45,12 @@ def _train_epoch(
 
             X.resize_(batch_size, Q.input_size)
 
-            X, target = Variable(X), Variable(target)
-            if cuda:
-                X, target = X.cuda(), target.cuda()
-
             Xn = add_noise(X) ###
+
+            X, Xn, target = Variable(X), Variable(Xn), Variable(target)
+            if cuda:
+                X, Xn, target = X.cuda(), Xn.cuda(), target.cuda()
+
 
             # Init gradients
             zero_grad_all(P, Q, D_cat, D_gauss)
