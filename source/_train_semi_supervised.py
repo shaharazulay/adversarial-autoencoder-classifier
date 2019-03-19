@@ -197,8 +197,7 @@ def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_
     P, Q, D_cat, D_gauss = models
 
     for epoch in range(epochs):
-        if epoch == 50:
-            optimizers = _get_optimizers(models, config_dict, decay=0.1)
+        optimizers = _get_optimizers(models, config_dict, decay=10 ** (-(epoch // 50)))
 
         all_losses = _train_epoch(
             models,
