@@ -63,8 +63,8 @@ def _train_epoch(
                 X_rec = P(latent_vec)
 
                 MSE = nn.MSELoss()
-                #recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
-                recon_loss = 0.5 * MSE(X_rec, X)
+                recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
+                #recon_loss = 0.5 * MSE(X_rec, X)
 
                 recon_loss.backward()
                 auto_encoder_optim.step()
