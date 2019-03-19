@@ -216,6 +216,7 @@ def _get_optimizers(models, config_dict, decay=1.0):
     mode_lr = learning_rates['mode_lr'] * decay
 
     # Set optimizators
+    ## CHANGEDDDDD
     auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters(), P_mode_decoder.parameters()), lr=auto_encoder_lr)
 
     G_optim = optim.Adam(Q.parameters(), lr=generator_lr)
