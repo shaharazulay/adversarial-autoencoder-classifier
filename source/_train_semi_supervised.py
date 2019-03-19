@@ -45,10 +45,11 @@ def _train_epoch(
 
             X.resize_(batch_size, Q.input_size)
 
-            X = add_noise(X) ###
             X, target = Variable(X), Variable(target)
             if cuda:
                 X, target = X.cuda(), target.cuda()
+
+            Xn = add_noise(X) ###
 
             # Init gradients
             zero_grad_all(P, Q, D_cat, D_gauss)
@@ -57,10 +58,12 @@ def _train_epoch(
                 #######################
                 # Reconstruction phase
                 #######################
-                latent_vec = torch.cat(Q(X), 1)
+                latent_vec = torch.cat(Q(Xn), 1)
                 X_rec = P(latent_vec)
 
-                recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
+                MSE = nn.MSELoss()
+                #recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
+                recon_loss = 0.5 * MSE(X_rec, X)
 
                 recon_loss.backward()
                 auto_encoder_optim.step()
@@ -151,10 +154,10 @@ def _get_optimizers(models, config_dict):
     classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
 
     ###
-    auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.001, momentum=0.9)
-    G_optim = optim.SGD(Q.parameters(), lr=0.01, momentum=0.1)
-    D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.01, momentum=0.9)
-    classifier_optim = optim.SGD(Q.parameters(), lr=0.01, momentum=0.9)
+    auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.01, momentum=0.9)
+    G_optim = optim.SGD(Q.parameters(), lr=0.1, momentum=0.1)
+    D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.1, momentum=0.9)
+    classifier_optim = optim.SGD(Q.parameters(), lr=0.1, momentum=0.9)
     ###
     optimizers = auto_encoder_optim, G_optim, D_optim, classifier_optim
 

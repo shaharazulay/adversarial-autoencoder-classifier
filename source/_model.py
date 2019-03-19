@@ -61,6 +61,7 @@ class P_net(BaseModel):
         x = F.dropout(x, p=0, training=self.training)
         x = F.relu(x)
         x = self.lin2(x)
+        x = F.relu(x)
         x = F.dropout(x, p=0, training=self.training)
         x = self.lin3(x)
         return sigmoid(x)
