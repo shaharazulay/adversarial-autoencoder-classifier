@@ -45,7 +45,7 @@ def _train_epoch(
 
             X.resize_(batch_size, Q.input_size)
 
-            Xn = add_noise(X) ###
+            Xn = X#add_noise(X) ###
 
             X, Xn, target = Variable(X), Variable(Xn), Variable(target)
             if cuda:
