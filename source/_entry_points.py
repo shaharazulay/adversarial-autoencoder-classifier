@@ -32,6 +32,7 @@ def train_semi_supervised_model_main(args=None):
 
     _add_dir_path_to_parser(parser)
     _add_output_dir_path_to_parser(parser)
+    _add_configuration_path_to_parser(parser)
     _add_batch_size_to_parser(parser)
     _add_epochs_to_parser(parser)
     _add_n_classes_to_parser(parser)
