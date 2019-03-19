@@ -92,7 +92,7 @@ def _train_epoch(
         # mode_recon_loss.backward()
         # mode_optim.step()
 
-        tot_loss = recon_loss + mode_recon_loss + 10.0 * mode_cyclic_loss
+        tot_loss = recon_loss + mode_recon_loss + mode_cyclic_loss
         tot_loss.backward()
         auto_encoder_optim.step()
 
