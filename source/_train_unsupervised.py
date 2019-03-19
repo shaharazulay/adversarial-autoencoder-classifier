@@ -53,8 +53,8 @@ def _train_epoch(
 
         recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
 
-        recon_loss.backward()
-        auto_encoder_optim.step()
+        # recon_loss.backward()
+        # auto_encoder_optim.step()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
@@ -75,8 +75,8 @@ def _train_epoch(
 
         mode_cyclic_loss = 1.0 * cat_info_loss + 0.1 * gauss_info_loss
 
-        mode_cyclic_loss.backward()
-        info_optim.step()
+        # mode_cyclic_loss.backward()
+        # info_optim.step()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
@@ -89,8 +89,12 @@ def _train_epoch(
 
         mode_recon_loss = F.binary_cross_entropy(X_mode_rec + epsilon, X + epsilon)
 
-        mode_recon_loss.backward()
-        mode_optim.step()
+        # mode_recon_loss.backward()
+        # mode_optim.step()
+
+        tot_loss = recon_loss + mode_recon_loss + 10.0 * mode_cyclic_loss
+        tot_loss.backward()
+        auto_encoder_optim.step()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)

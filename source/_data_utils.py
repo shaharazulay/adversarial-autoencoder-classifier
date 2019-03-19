@@ -6,17 +6,9 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision import transforms
 
-def min_max_normalization(tensor, min_value, max_value):
-    min_tensor = tensor.min()
-    tensor = (tensor - min_tensor)
-    max_tensor = tensor.max()
-    tensor = tensor / max_tensor
-    tensor = tensor * (max_value - min_value) + min_value
-    return tensor
 
 default_transform = transforms.Compose([
     transforms.ToTensor(),
-    #transforms.Lambda(lambda tensor:min_max_normalization(tensor, 0, 1))
     #transforms.Normalize((0.1307,), (0.3081,))
     ])
 

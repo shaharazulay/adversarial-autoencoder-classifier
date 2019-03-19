@@ -80,7 +80,7 @@ def unsupervised_classification_accuracy(Q, data_loader, n_classes=10):
             best_matching_label = max(pred_to_true[y_hat], key=pred_to_true[y_hat].get)
             correct += pred_to_true[y_hat][best_matching_label]
         except:
-            print("label %s in never predicted" % y_hat)
+            print("\nlabel %s in never predicted" % y_hat)
 
     return 100. * correct / N
 
