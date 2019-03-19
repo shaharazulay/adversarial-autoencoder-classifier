@@ -36,9 +36,9 @@ class Q_net(BaseModel):
         self.lin3_cat = nn.Linear(hidden_size, n_classes)
 
     def forward(self, x):
-        x = F.dropout(self.lin1(x), p=0.25, training=self.training)
+        x = F.dropout(self.lin1(x), p=0, training=self.training)
         x = F.relu(x)
-        x = F.dropout(self.lin2(x), p=0.25, training=self.training)
+        x = F.dropout(self.lin2(x), p=0, training=self.training)
         x = F.relu(x)
         z_gauss = self.lin3_gauss(x)
         y_cat = F.softmax(self.lin3_cat(x), dim=1)
@@ -58,10 +58,10 @@ class P_net(BaseModel):
 
     def forward(self, x):
         x = self.lin1(x)
-        x = F.dropout(x, p=0.25, training=self.training)
+        x = F.dropout(x, p=0, training=self.training)
         x = F.relu(x)
         x = self.lin2(x)
-        x = F.dropout(x, p=0.25, training=self.training)
+        x = F.dropout(x, p=0, training=self.training)
         x = self.lin3(x)
         return sigmoid(x)
 
@@ -79,7 +79,7 @@ class D_net_cat(BaseModel):
     def forward(self, x):
         x = self.lin1(x)
         x = F.relu(x)
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0, training=self.training)
         x = self.lin2(x)
         x = F.relu(x)
         x = self.lin3(x)
@@ -97,8 +97,8 @@ class D_net_gauss(BaseModel):
         self.lin3 = nn.Linear(hidden_size, 1)
 
     def forward(self, x):
-        x = F.dropout(self.lin1(x), p=0.2, training=self.training)
+        x = F.dropout(self.lin1(x), p=0, training=self.training)
         x = F.relu(x)
-        x = F.dropout(self.lin2(x), p=0.2, training=self.training)
+        x = F.dropout(self.lin2(x), p=0, training=self.training)
         x = F.relu(x)
         return sigmoid(self.lin3(x))

@@ -18,6 +18,11 @@ def _train_epoch(
     '''
     Train procedure for one epoch.
     '''
+    def add_noise(input):
+        noise = torch.randn(input.size()) * 0.3
+        noisy_input = input + noise
+        return noisy_input
+
     epsilon = np.finfo(float).eps
 
     # load models and optimizers
@@ -40,6 +45,7 @@ def _train_epoch(
 
             X.resize_(batch_size, Q.input_size)
 
+            X = add_noise(X) ###
             X, target = Variable(X), Variable(target)
             if cuda:
                 X, target = X.cuda(), target.cuda()
@@ -144,6 +150,12 @@ def _get_optimizers(models, config_dict):
 
     classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
 
+    ###
+    auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.01, momentum=0.9)
+    G_optim = optim.SGD(Q.parameters(), lr=0.1, momentum=0.1)
+    D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.1, momentum=0.9)
+    classifier_optim = optim.SGD(Q.parameters(), lr=0.1, momentum=0.9)
+    ###
     optimizers = auto_encoder_optim, G_optim, D_optim, classifier_optim
 
     return optimizers
