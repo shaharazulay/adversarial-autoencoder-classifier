@@ -30,7 +30,7 @@ def _train_epoch(
     batch_size = train_labeled_loader.batch_size
 
     # Loop through the labeled and unlabeled dataset getting one batch of samples from each
-    for (X_l, target_l), (X_u, target_u) in itertools.izip(train_labeled_loader, train_unlabeled_loader):
+    for (X_l, target_l), (X_u, target_u) in zip(train_labeled_loader, train_unlabeled_loader):
 
         for X, target in [(X_u, target_u), (X_l, target_l)]:
             if target[0] == -1:
