@@ -8,7 +8,7 @@ from torchvision import transforms
 
 
 default_transform = transforms.Compose([
-    transforms.ToTensor()])
+    transforms.ToTensor()]),
     transforms.Normalize((0.1307,), (0.3081,))
     ])
 
