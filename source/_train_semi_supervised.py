@@ -141,10 +141,10 @@ def _get_optimizers(models, config_dict, decay=1.0):
     # Set learning rates
     learning_rates = config_dict['learning_rates']
 
-    auto_encoder_lr = learning_rates['auto_encoder_lr']
-    generator_lr = learning_rates['generator_lr']
-    discriminator_lr = learning_rates['discriminator_lr']
-    classifier_lr = learning_rates['classifier_lr']
+    auto_encoder_lr = learning_rates['auto_encoder_lr'] * decay
+    generator_lr = learning_rates['generator_lr'] * decay
+    discriminator_lr = learning_rates['discriminator_lr'] * decay
+    classifier_lr = learning_rates['classifier_lr'] * decay
 
     # Set optimizators
     auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=auto_encoder_lr)
