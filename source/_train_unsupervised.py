@@ -36,9 +36,11 @@ def _train_epoch(
 
         X.resize_(batch_size, Q.input_size)
 
-        X, target = Variable(X), Variable(target)
+        X_noisy = add_noise(X)
+
+        X, X_noisy, target = Variable(X), Variable(X_noisy), Variable(target)
         if cuda:
-            X, target = X.cuda(), target.cuda()
+            X, X_noisy, target = X.cuda(), X_noisy.cuda(), target.cuda()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
@@ -46,7 +48,7 @@ def _train_epoch(
         #######################
         # Reconstruction phase
         #######################
-        latent_vec = torch.cat(Q(X), 1)
+        latent_vec = torch.cat(Q(X_noisy), 1)
         X_rec = P(latent_vec)
 
         recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
@@ -82,7 +84,7 @@ def _train_epoch(
         #######################
         # Mode reconstruction phase
         #######################
-        latent_y, latent_z = Q(X)
+        latent_y, latent_z = Q(X_noisy)
         X_mode_rec = P_mode_decoder(latent_y)
 
         mode_recon_loss = F.binary_cross_entropy(X_mode_rec + epsilon, X + epsilon)
@@ -194,7 +196,7 @@ def _train_epoch(
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss
 
 
-def _get_optimizers(models, config_dict):
+def _get_optimizers(models, config_dict, decay=1.0):
     '''
     Set and return all relevant optimizers needed for the training process.
     '''
@@ -203,11 +205,11 @@ def _get_optimizers(models, config_dict):
     # Set learning rates
     learning_rates = config_dict['learning_rates']
 
-    auto_encoder_lr = learning_rates['auto_encoder_lr']
-    generator_lr = learning_rates['generator_lr']
-    discriminator_lr = learning_rates['discriminator_lr']
-    info_lr = learning_rates['info_lr']
-    mode_lr = learning_rates['mode_lr']
+    auto_encoder_lr = learning_rates['auto_encoder_lr'] * decay
+    generator_lr = learning_rates['generator_lr'] * decay
+    discriminator_lr = learning_rates['discriminator_lr'] * decay
+    info_lr = learning_rates['info_lr'] * decay
+    mode_lr = learning_rates['mode_lr'] * decay
 
     # Set optimizators
     auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=auto_encoder_lr)
@@ -259,6 +261,9 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
     P, Q, D_cat, D_gauss, P_mode_decoder = models
 
     for epoch in range(epochs):
+        if epoch == 50: # learning rate decay
+            optimizers = _get_optimizers(models, config_dict, decay=0.1)
+
         all_losses = _train_epoch(
             models,
             optimizers,

@@ -18,11 +18,6 @@ def _train_epoch(
     '''
     Train procedure for one epoch.
     '''
-    def add_noise(input):
-        noise = torch.randn(input.size()) * 0.3
-        noisy_input = input + noise
-        return noisy_input
-
     epsilon = np.finfo(float).eps
 
     # load models and optimizers
@@ -45,11 +40,11 @@ def _train_epoch(
 
             X.resize_(batch_size, Q.input_size)
 
-            Xn = add_noise(X) ###
+            X_noisy = add_noise(X)
 
-            X, Xn, target = Variable(X), Variable(Xn), Variable(target)
+            X, X_noisy, target = Variable(X), Variable(X_noisy), Variable(target)
             if cuda:
-                X, Xn, target = X.cuda(), Xn.cuda(), target.cuda()
+                X, X_noisy, target = X.cuda(), X_noisy.cuda(), target.cuda()
 
 
             # Init gradients
@@ -59,12 +54,10 @@ def _train_epoch(
                 #######################
                 # Reconstruction phase
                 #######################
-                latent_vec = torch.cat(Q(Xn), 1)
+                latent_vec = torch.cat(Q(X_noisy), 1)
                 X_rec = P(latent_vec)
 
-                MSE = nn.MSELoss()
                 recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
-                #recon_loss = 0.5 * MSE(X_rec, X)
 
                 recon_loss.backward()
                 auto_encoder_optim.step()
@@ -147,18 +140,18 @@ def _get_optimizers(models, config_dict, decay=1.0):
     classifier_lr = learning_rates['classifier_lr'] * decay
 
     # Set optimizators
-    # auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=auto_encoder_lr)
-    #
-    # G_optim = optim.Adam(Q.parameters(), lr=generator_lr)
-    # D_optim = optim.Adam(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=discriminator_lr)
-    #
-    # classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
+    auto_encoder_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=auto_encoder_lr)
+
+    G_optim = optim.Adam(Q.parameters(), lr=generator_lr)
+    D_optim = optim.Adam(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=discriminator_lr)
+
+    classifier_optim = optim.Adam(Q.parameters(), lr=classifier_lr)
 
     ###
-    auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.01 * decay, momentum=0.9)
-    G_optim = optim.SGD(Q.parameters(), lr=0.1 * decay, momentum=0.1)
-    D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.01 * decay, momentum=0.9)
-    classifier_optim = optim.SGD(Q.parameters(), lr=0.01 * decay, momentum=0.9)
+    # auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.01 * decay, momentum=0.9)
+    # G_optim = optim.SGD(Q.parameters(), lr=0.1 * decay, momentum=0.1)
+    # D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.01 * decay, momentum=0.9)
+    # classifier_optim = optim.SGD(Q.parameters(), lr=0.01 * decay, momentum=0.9)
     ###
     optimizers = auto_encoder_optim, G_optim, D_optim, classifier_optim
 
@@ -197,7 +190,7 @@ def train(train_labeled_loader, train_unlabeled_loader, valid_loader, epochs, n_
     P, Q, D_cat, D_gauss = models
 
     for epoch in range(epochs):
-        if epoch == 50:
+        if epoch == 50: # learning rate decay
             optimizers = _get_optimizers(models, config_dict, decay=0.1)
 
         all_losses = _train_epoch(

@@ -7,6 +7,14 @@ import numpy as np
 cuda = torch.cuda.is_available()
 
 
+def add_noise(input):
+    '''
+    Add random noise to input.
+    '''
+    noise = torch.randn(input.size()) * 0.3
+    noisy_input = input + noise
+    return noisy_input
+
 def predict_labels(Q, X):
     Q.eval()
 
