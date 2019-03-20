@@ -24,24 +24,29 @@ class Q_net(BaseModel):
     '''
     Encoder network.
     '''
-    def __init__(self, input_size=784, hidden_size=1000, z_size=2, n_classes=10):
+    def __init__(self, input_size=784, hidden_size=1000, z_size=2, n_classes=10, dropout=0):
         super(Q_net, self).__init__()
         self.input_size = input_size
 
         self.lin1 = nn.Linear(input_size, hidden_size)
         self.lin2 = nn.Linear(hidden_size, hidden_size)
+        # batch normalization
+        self.bn1 = nn.BatchNorm1d(hidden_size)
+        self.bn2 = nn.BatchNorm1d(hidden_size)
+        self.bn_y = nn.BatchNorm1d(n_classes)
+        self.bn_z = nn.BatchNorm1d(z_size)
         # gaussian encoding (z)
         self.lin3_gauss = nn.Linear(hidden_size, z_size)
         # categorical label (y)
         self.lin3_cat = nn.Linear(hidden_size, n_classes)
 
     def forward(self, x):
-        x = F.dropout(self.lin1(x), p=0, training=self.training)
-        x = F.relu(x)
-        x = F.dropout(self.lin2(x), p=0, training=self.training)
-        x = F.relu(x)
-        z_gauss = self.lin3_gauss(x)
-        y_cat = F.softmax(self.lin3_cat(x), dim=1)
+        x = F.dropout(self.lin1(x), p=dropout, training=self.training)
+        x = F.relu(self.bn1(x))
+        x = self.lin2(x)
+        x = F.relu(self.bn2(x))
+        z_gauss = self.bn_z(self.lin3_gauss(x))
+        y_cat = F.softmax(self.bn_y(self.lin3_cat(x)), dim=1)
 
         return y_cat, z_gauss
 
@@ -58,11 +63,11 @@ class P_net(BaseModel):
 
     def forward(self, x):
         x = self.lin1(x)
-        x = F.dropout(x, p=0, training=self.training)
+        #x = F.dropout(x, p=0, training=self.training)
         x = F.relu(x)
         x = self.lin2(x)
         x = F.relu(x)
-        x = F.dropout(x, p=0, training=self.training)
+        #x = F.dropout(x, p=0, training=self.training)
         x = self.lin3(x)
         return sigmoid(x)
 
@@ -80,7 +85,7 @@ class D_net_cat(BaseModel):
     def forward(self, x):
         x = self.lin1(x)
         x = F.relu(x)
-        x = F.dropout(x, p=0, training=self.training)
+        #x = F.dropout(x, p=0, training=self.training)
         x = self.lin2(x)
         x = F.relu(x)
         x = self.lin3(x)
@@ -98,8 +103,10 @@ class D_net_gauss(BaseModel):
         self.lin3 = nn.Linear(hidden_size, 1)
 
     def forward(self, x):
-        x = F.dropout(self.lin1(x), p=0, training=self.training)
+        #x = F.dropout(self.lin1(x), p=0, training=self.training)
+        x = self.lin1(x)
         x = F.relu(x)
-        x = F.dropout(self.lin2(x), p=0, training=self.training)
+        x = self.lin2(x)
+        #x = F.dropout(self.lin2(x), p=0, training=self.training)
         x = F.relu(x)
         return sigmoid(self.lin3(x))

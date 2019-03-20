@@ -230,7 +230,11 @@ def _get_models(n_classes, z_dim, config_dict):
     '''
     model_params = config_dict['model']
 
-    Q = Q_net(z_size=z_dim, n_classes=n_classes, hidden_size=model_params['hidden_size'])
+    Q = Q_net(
+        z_size=z_dim,
+        n_classes=n_classes,
+        hidden_size=model_params['hidden_size'],
+        dropout=model_params['encoder_dropout'])
     P = P_net(z_size=z_dim, n_classes=n_classes, hidden_size=model_params['hidden_size'])
     D_cat = D_net_cat(n_classes=n_classes, hidden_size=model_params['hidden_size'])
     D_gauss = D_net_gauss(z_size=z_dim, hidden_size=model_params['hidden_size'])
