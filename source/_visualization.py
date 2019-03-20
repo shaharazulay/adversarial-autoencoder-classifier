@@ -271,10 +271,10 @@ import os
 from _model import Q_net, P_net
 
 mode = 'semi_supervised'
-data_dir = '../out/results/supervised_200_epochs_94_per_acc/'
+data_dir = '../out/results/supervised_200_epochs_97_per_acc/2019-03-20-06_00_22'
 #data_dir = '../data/2.3 10:40AM'
 n_classes = 10
-z_dim = 2
+z_dim = 10
 
 Q = Q_net().load(os.path.join(data_dir, 'encoder_{}'.format(mode)), z_size=z_dim, n_classes=n_classes)
 P = P_net().load(os.path.join(data_dir, 'decoder_{}'.format(mode)), z_size=z_dim, n_classes=n_classes)

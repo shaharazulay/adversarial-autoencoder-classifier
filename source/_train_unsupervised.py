@@ -20,6 +20,7 @@ def _train_epoch(
     Train procedure for one epoch.
     '''
     epsilon = np.finfo(float).eps
+    params = config_dict['training']
 
     # load models and optimizers
     P, Q, D_cat, D_gauss, P_mode_decoder = models
@@ -73,10 +74,11 @@ def _train_epoch(
         cat_info_loss = F.binary_cross_entropy(latent_y_rec, latent_y.detach())
         gauss_info_loss = continuous_loss(latent_z_rec, latent_z.detach())
 
-        mode_cyclic_loss = 1.0 * cat_info_loss + 0.1 * gauss_info_loss
+        mutual_info_loss = 1.0 * cat_info_loss + 0.1 * gauss_info_loss
 
-        mode_cyclic_loss.backward()
-        info_optim.step()
+        if params['use_mutual_info']:
+            mutual_info_loss.backward()
+            info_optim.step()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
@@ -89,28 +91,12 @@ def _train_epoch(
 
         mode_recon_loss = F.binary_cross_entropy(X_mode_rec + epsilon, X + epsilon)
 
-        mode_recon_loss.backward()
-        mode_optim.step()
+        if params['use_mode_decoder']:
+            mode_recon_loss.backward()
+            mode_optim.step()
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
-
-        #######################
-        # Mode cyclic phase
-        # #######################
-        # Q.eval()
-        #
-        # latent_y, _ = Q(X)
-        # X_mode_rec = P_mode_decoder(latent_y)
-        #
-        # latent_mode_cylic_y, _ = Q(X_mode_rec)
-        # mode_cyclic_loss = 10 * F.binary_cross_entropy(latent_y, latent_mode_cylic_y.detach())  # NOTE: *10 is here
-        #
-        # mode_cyclic_loss.backward()
-        # P_mode_decoder_optim.step()
-        #
-        # # Init gradients
-        # zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         #######################
         # Mode disentanglement phase
@@ -181,10 +167,6 @@ def _train_epoch(
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
-        ### REMOVEEEEEEEEEEEEEEEEEEE
-        mode_disentanglement_loss = torch.tensor([0.0]) #############
-        ###########3
-
         # report progress
         # report_loss(
         #     epoch=-1,
@@ -193,7 +175,7 @@ def _train_epoch(
         report_progress(float(batch_num) / n_batches)
 
 
-    return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss
+    return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss
 
 
 def _get_optimizers(models, config_dict, decay=1.0):
@@ -286,7 +268,7 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
                 all_losses,
                 descriptions=[
                     'D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss',
-                    'mode_recon_loss', 'mode_cyclic_loss', 'mode_disentanglement_loss'],
+                    'mode_recon_loss', 'mutual_info_loss'],
                 output_dir=output_dir)
             print('Unsupervised classification accuracy: {} %'.format(val_acc))
 
