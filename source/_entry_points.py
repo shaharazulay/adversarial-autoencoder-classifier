@@ -120,7 +120,7 @@ def train_unsupervised_model_main(args=None):
     P.save(os.path.join(args.output_dir_path, 'decoder_unsupervised'))
     P_mode_decoder.save(os.path.join(args.output_dir_path, 'mode_decoder_unsupervised'))
 
-    D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mode_cyclic_loss, mode_disentanglement_loss = zip(*learning_curve)
+    D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss = zip(*learning_curve)
 
     _save_learning_curve(
         series=[D_loss_cat, D_loss_gauss, G_loss],
@@ -137,10 +137,10 @@ def train_unsupervised_model_main(args=None):
     )
 
     _save_learning_curve(
-        series=[mode_cyclic_loss],
-        title='Unsupervised Cyclic Info Learning Curve',
-        legend=['mode_cyclic_loss'],
-        path=os.path.join(args.output_dir_path, 'unsupervised_cyclic_info_learning_curve.png')
+        series=[mutual_info_loss],
+        title='Unsupervised Mutual Info Learning Curve',
+        legend=['mutual_info_loss'],
+        path=os.path.join(args.output_dir_path, 'unsupervised_mutual_info_learning_curve.png')
     )
 
     _save_current_configration(config_dict, args.output_dir_path)
