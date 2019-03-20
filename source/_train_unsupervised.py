@@ -261,7 +261,7 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
     P, Q, D_cat, D_gauss, P_mode_decoder = models
 
     for epoch in range(epochs):
-        if epoch == 20: # learning rate decay
+        if epoch == 50: # learning rate decay
             optimizers = _get_optimizers(models, config_dict, decay=0.1)
 
         all_losses = _train_epoch(
