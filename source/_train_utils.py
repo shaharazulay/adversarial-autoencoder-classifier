@@ -85,7 +85,7 @@ def unsupervised_classification_accuracy(Q, data_loader, n_classes=10):
 
     return 100. * correct / N
 
-def get_unsupervised_boosting_weights(Q, train_unlabeled_loader, valid_loader):
+def get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader):
     #### Get sample weights (boosting)
     batch_size = train_unlabeled_loader.batch_size
     
