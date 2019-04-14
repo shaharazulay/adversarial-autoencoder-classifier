@@ -188,7 +188,7 @@ def _train_epoch(
 
             weights = torch.cat(weights, recon_loss)
         
-        print weights
+        print(weights)
         ######
         
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss
