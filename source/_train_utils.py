@@ -125,7 +125,7 @@ def get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader
 
         for l, y_true in zip(loss, target):
             weights_per_label.setdefault(y_true.item(), 0)
-            weights_per_label[y_true.item()] += l
+            weights_per_label[y_true.item()] += l.item()
             
     highest_weight_label = max(weights_per_label, key=weights_per_label.get)
     print("highest label weights is the digit {}".format(highest_weight_label))
