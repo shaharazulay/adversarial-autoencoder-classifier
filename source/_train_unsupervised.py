@@ -172,7 +172,6 @@ def _train_epoch(
 
 
         #### Get sample weights (boosting)
-        import torch
         weights = torch.Tensor()
         for batch_num, (X, target) in enumerate(train_unlabeled_loader):
 
