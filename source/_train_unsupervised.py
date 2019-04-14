@@ -203,11 +203,11 @@ def _get_optimizers(models, config_dict, decay=1.0):
     mode_optim = optim.Adam(itertools.chain(Q.parameters(), P_mode_decoder.parameters()), lr=mode_lr)
 
     ###
-    auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.01 * decay, momentum=0.9)
-    G_optim = optim.SGD(Q.parameters(), lr=0.1 * decay, momentum=0.1)
-    D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.1 * decay, momentum=0.1)
+    # auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.01 * decay, momentum=0.9)
+    # G_optim = optim.SGD(Q.parameters(), lr=0.1 * decay, momentum=0.1)
+    # D_optim = optim.SGD(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=0.1 * decay, momentum=0.1)
     ###
-    
+
     optimizers = auto_encoder_optim, G_optim, D_optim, info_optim, mode_optim
 
     return optimizers
