@@ -171,24 +171,27 @@ def _train_epoch(
         report_progress(float(batch_num) / n_batches)
 
 
-        #### Get sample weights (boosting)
-        weights = torch.Tensor()
-        for batch_num, (X, target) in enumerate(train_unlabeled_loader):
-
-            X.resize_(batch_size, Q.input_size)
-            X, target = Variable(X), Variable(target)
-            if cuda:
-                X, target = X.cuda(), target.cuda()
-
-            # Reconstruction loss
-            latent_vec = torch.cat(Q(X), 1)
-            X_rec = P(latent_vec)
-            recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon, reduction='none')
-
-            weights = torch.cat((weights, recon_loss))
+    #### Get sample weights (boosting)
+    weights = torch.Tensor()
+    if cuda:
+        weights = weights.cuda()
         
-        print(weights)
-        ######
+    for batch_num, (X, target) in enumerate(train_unlabeled_loader):
+
+        X.resize_(batch_size, Q.input_size)
+        X, target = Variable(X), Variable(target)
+        if cuda:
+            X, target = X.cuda(), target.cuda()
+
+        # Reconstruction loss
+        latent_vec = torch.cat(Q(X), 1)
+        X_rec = P(latent_vec)
+        recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon, reduction='none')
+
+        weights = torch.cat((weights, recon_loss))
+    
+    print(weights)
+    ######
         
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss
 
