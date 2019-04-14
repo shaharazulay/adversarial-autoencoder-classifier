@@ -196,9 +196,8 @@ def _train_epoch(
             weights_per_label[y_true.item()][y_true.item()] += l
     
     highest_weight_label = max(weights_per_label, key=weights_per_label.get)
-    print("highest label weights is the digit {}".format(highest_weight_label)
+    print("highest label weights is the digit {}".format(highest_weight_label))
     weights = (weights - torch.min(weights))/ (torch.max(weights) - torch.min(weights))
-    print(weights)
     ######
         
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss
