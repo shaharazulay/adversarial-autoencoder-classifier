@@ -172,6 +172,7 @@ def _train_epoch(
 
 
     #### Get sample weights (boosting)
+    weights_per_label = {}
     weights = torch.Tensor()
     if cuda:
         weights = weights.cuda()
@@ -189,7 +190,13 @@ def _train_epoch(
         loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon, reduction='none')
 
         weights = torch.cat((weights, loss))
+        
+        for l, y_true in zip(loss, target):
+            weights_per_label.setdefault(y_true.item(), 0)
+            weights_per_label[y_true.item()][y_true.item()] += l
     
+    highest_weight_label = max(weights_per_label, key=weights_per_label.get)
+    print("highest label weights is the digit {}".format(highest_weight_label)
     weights = (weights - torch.min(weights))/ (torch.max(weights) - torch.min(weights))
     print(weights)
     ######
