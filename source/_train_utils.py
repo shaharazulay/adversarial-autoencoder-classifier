@@ -124,6 +124,7 @@ def get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader
         loss = F.binary_cross_entropy(X_rec, X, reduction='none')
 
         for l, y_true in zip(loss, target):
+            print(l)
             weights_per_label.setdefault(y_true.item(), 0)
             weights_per_label[y_true.item()] += l.item()
             
