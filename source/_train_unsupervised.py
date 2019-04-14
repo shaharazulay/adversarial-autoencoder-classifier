@@ -193,7 +193,7 @@ def _train_epoch(
         
         for l, y_true in zip(loss, target):
             weights_per_label.setdefault(y_true.item(), 0)
-            weights_per_label[y_true.item()][y_true.item()] += l
+            weights_per_label[y_true.item()] += l
     
     highest_weight_label = max(weights_per_label, key=weights_per_label.get)
     print("highest label weights is the digit {}".format(highest_weight_label))
