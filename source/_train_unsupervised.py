@@ -190,7 +190,7 @@ def _train_epoch(
 
         weights = torch.cat((weights, loss))
     
-    weights = weights / torch.sum(weights)
+    weights = (weights - torch.min(weights))/ (torch.max(weights) - torch.min(weights))
     print(weights)
     ######
         
