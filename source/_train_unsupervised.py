@@ -186,10 +186,11 @@ def _train_epoch(
         # Reconstruction loss
         latent_vec = torch.cat(Q(X), 1)
         X_rec = P(latent_vec)
-        recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon, reduction='none')
+        loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon, reduction='none')
 
-        weights = torch.cat((weights, recon_loss))
+        weights = torch.cat((weights, loss))
     
+    weights = weights / torch.sum(weights)
     print(weights)
     ######
         
