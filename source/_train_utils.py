@@ -103,7 +103,7 @@ def get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader
         # Reconstruction loss
         latent_vec = torch.cat(Q(X), 1)
         X_rec = P(latent_vec)
-        loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon, reduction='none')
+        loss = F.binary_cross_entropy(X_rec, X, reduction='none')
 
         weights = torch.cat((weights, loss))
 
