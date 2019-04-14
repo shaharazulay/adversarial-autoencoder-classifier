@@ -2,6 +2,7 @@ import os
 import sys
 import torch
 from torch.autograd import Variable
+import torch.nn.functional as F
 import numpy as np
 
 cuda = torch.cuda.is_available()
@@ -84,6 +85,52 @@ def unsupervised_classification_accuracy(Q, data_loader, n_classes=10):
 
     return 100. * correct / N
 
+def get_unsupervised_boosting_weights(Q, train_unlabeled_loader, valid_loader):
+    #### Get sample weights (boosting)
+    weights = torch.Tensor()
+    if cuda:
+        weights = weights.cuda()
+        
+    for batch_num, (X, target) in enumerate(train_unlabeled_loader):
+
+        X.resize_(batch_size, Q.input_size)
+        X, target = Variable(X), Variable(target)
+        if cuda:
+            X, target = X.cuda(), target.cuda()
+
+        # Reconstruction loss
+        latent_vec = torch.cat(Q(X), 1)
+        X_rec = P(latent_vec)
+        loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon, reduction='none')
+
+        weights = torch.cat((weights, loss))
+
+    weights = (weights - torch.min(weights))/ (torch.max(weights) - torch.min(weights))
+
+    ## for validation
+    weights_per_label = {}
+    for batch_num, (X, target) in enumerate(valid_loader):
+
+        X.resize_(batch_size, Q.input_size)
+        X, target = Variable(X), Variable(target)
+        if cuda:
+            X, target = X.cuda(), target.cuda()
+
+        # Reconstruction loss
+        latent_vec = torch.cat(Q(X), 1)
+        X_rec = P(latent_vec)
+        loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon, reduction='none')
+
+        for l, y_true in zip(loss, target):
+            weights_per_label.setdefault(y_true.item(), 0)
+            weights_per_label[y_true.item()] += l
+            
+    highest_weight_label = max(weights_per_label, key=weights_per_label.get)
+    print("highest label weights is the digit {}".format(highest_weight_label))
+    ######
+    
+    return weights
+    
 def zero_grad_all(*models):
     [m.zero_grad() for m in models]
 

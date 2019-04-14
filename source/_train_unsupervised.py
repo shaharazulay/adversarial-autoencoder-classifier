@@ -169,36 +169,6 @@ def _train_epoch(
 
         # report progress
         report_progress(float(batch_num) / n_batches)
-
-
-    #### Get sample weights (boosting)
-    weights_per_label = {}
-    weights = torch.Tensor()
-    if cuda:
-        weights = weights.cuda()
-        
-    for batch_num, (X, target) in enumerate(train_unlabeled_loader):
-
-        X.resize_(batch_size, Q.input_size)
-        X, target = Variable(X), Variable(target)
-        if cuda:
-            X, target = X.cuda(), target.cuda()
-
-        # Reconstruction loss
-        latent_vec = torch.cat(Q(X), 1)
-        X_rec = P(latent_vec)
-        loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon, reduction='none')
-
-        weights = torch.cat((weights, loss))
-        
-        for l, y_true in zip(loss, target):
-            weights_per_label.setdefault(y_true.item(), 0)
-            weights_per_label[y_true.item()] += l
-    
-    highest_weight_label = max(weights_per_label, key=weights_per_label.get)
-    print("highest label weights is the digit {}".format(highest_weight_label))
-    weights = (weights - torch.min(weights))/ (torch.max(weights) - torch.min(weights))
-    ######
         
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss
 
@@ -291,6 +261,8 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
 
         learning_curve.append(all_losses)
 
+        weights = get_unsupervised_boosting_weights(Q, train_unlabeled_loader, valid_loader)
+        
         if epoch % 1 == 0:
             val_acc = unsupervised_classification_accuracy(Q, valid_loader, n_classes=n_classes)
 
