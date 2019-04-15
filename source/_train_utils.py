@@ -118,16 +118,15 @@ def get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader
         if cuda:
             X, target = X.cuda(), target.cuda()
 
-        # Reconstruction loss
         latent_vec = torch.cat(Q(X), 1)
         X_rec = P(latent_vec)
-        loss = F.binary_cross_entropy(X_rec, X, reduction='none')
+        
+        for x, x_rec, y_true in zip(X, X_rec, target):
+            # Reconstruction loss
+            loss = F.binary_cross_entropy(x_rec, x)
 
-        print(loss.shape)
-        for l, y_true in zip(loss, target):
-            print(l)
             weights_per_label.setdefault(y_true.item(), 0)
-            weights_per_label[y_true.item()] += l.item()
+            weights_per_label[y_true.item()] += loss.item()
             
     highest_weight_label = max(weights_per_label, key=weights_per_label.get)
     print("highest label weights is the digit {}".format(highest_weight_label))
