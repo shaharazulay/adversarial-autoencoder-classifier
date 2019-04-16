@@ -6,8 +6,6 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 
 import matplotlib
-#matplotlib.use("TKAgg")
-
 from matplotlib import gridspec
 import matplotlib.pyplot as plt
 
