@@ -2,6 +2,7 @@ import numpy as np
 from collections import Counter
 import torch
 from torch.autograd import Variable
+import torch.nn.functional as F
 
 import matplotlib
 matplotlib.use("TKAgg")
@@ -256,9 +257,10 @@ def unsupervised_accuracy_score(Q, valid_loader, n_classes=10):
         try:
             label_mapping[y_hat] = max(pred_to_true[y_hat], key=pred_to_true[y_hat].get)
             correct += pred_to_true[y_hat][label_mapping[y_hat]]
-            wrong += sum([v for  k, v in pred_to_true[y_hat].iteritems() if k != label_mapping[y_hat]])
-        except:
-            print("label %s in never predicted" % y_hat)
+            wrong += sum([v for  k, v in pred_to_true[y_hat].items() if k != label_mapping[y_hat]])
+        except Exception as e:
+            print(e)
+            print("label %s is never predicted" % y_hat)
 
     print("ACCURACY: %.2f%%" % (float(correct) / (wrong + correct)))
 
@@ -266,19 +268,45 @@ def unsupervised_accuracy_score(Q, valid_loader, n_classes=10):
     print(pred_to_true)
     return true_to_pred
 
+def highest_loss_digit(Q, P, valid_loader):
+    batch_size = valid_loader.batch_size
+    
+    weights_per_label = {}
+    for batch_num, (X, target) in enumerate(valid_loader):
+
+        X.resize_(batch_size, Q.input_size)
+        X, target = Variable(X), Variable(target)
+        if cuda:
+            X, target = X.cuda(), target.cuda()
+
+        latent_vec = torch.cat(Q(X), 1)
+        X_rec = P(latent_vec)
+        
+        for x, x_rec, y_true in zip(X, X_rec, target):
+            # Reconstruction loss
+            loss = F.binary_cross_entropy(x_rec, x)
+
+            weights_per_label.setdefault(y_true.item(), 0)
+            weights_per_label[y_true.item()] += loss.item()
+            
+    highest_weight_label = max(weights_per_label, key=weights_per_label.get)
+    print("\nhighest label weights is the digit {}".format(highest_weight_label))
+    print(weights_per_label)
+    
 
 import os
 from _model import Q_net, P_net
 
-mode = 'semi_supervised'
-data_dir = '../out/results/supervised_200_epochs_97_per_acc/2019-03-20-06_00_22'
+mode = 'unsupervised'
+data_dir = '../out/2019-04-16-07_27_54'
 #data_dir = '../data/2.3 10:40AM'
 n_classes = 10
-z_dim = 10
+z_dim = 5
+hidden_size = 3000
 
-Q = Q_net().load(os.path.join(data_dir, 'encoder_{}'.format(mode)), z_size=z_dim, n_classes=n_classes)
-P = P_net().load(os.path.join(data_dir, 'decoder_{}'.format(mode)), z_size=z_dim, n_classes=n_classes)
-P_mode_decoder = P_net().load(os.path.join(data_dir, 'mode_decoder_unsupervised'), z_size=0, n_classes=n_classes)
+Q = Q_net().load(os.path.join(data_dir, 'encoder_{}'.format(mode)), z_size=z_dim, n_classes=n_classes, hidden_size=hidden_size)
+P = P_net().load(os.path.join(data_dir, 'decoder_{}'.format(mode)), z_size=z_dim, n_classes=n_classes, hidden_size=hidden_size)
+P_mode_decoder = P_net().load(os.path.join(data_dir, 'mode_decoder_unsupervised'), z_size=0, n_classes=n_classes, hidden_size=hidden_size)
 
 import _data_utils
 cuda = torch.cuda.is_available()
@@ -286,6 +314,7 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 train_labeled_loader, train_unlabeled_loader, valid_loader = _data_utils.load_data(
     data_path='../data', batch_size=100, **kwargs)
 
+print(highest_loss_digit(Q, P, valid_loader))
 plot_latent_distribution(P, valid_loader)
 print(plot_predicted_label_distribution(P, valid_loader, n_classes=n_classes))
 print(unsupervised_accuracy_score(Q, valid_loader, n_classes=n_classes))
