@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 from ._data_utils import init_datasets, load_data
 from ._train_semi_supervised import train as train_semi_supervised
 from ._train_unsupervised import train as train_unsupervised
+from ._visualization import *
 
 cuda = torch.cuda.is_available()
 
@@ -147,6 +148,57 @@ def train_unsupervised_model_main(args=None):
 
     _save_current_configration(config_dict, args.output_dir_path)
 
+
+def generate_trained_model_visualization_main(args=None):
+    parser = argparse.ArgumentParser(
+        description='Generate visualizations and analysis to describe the behaviour of a trained model, and store on disk.')
+
+    _add_dir_path_to_parser(parser)
+    _add_model_path_to_parser(parser)
+    _add_training_mode_to_parser(parser)
+    _add_batch_size_to_parser(parser)
+    _add_n_classes_to_parser(parser)
+    _add_z_gauss_size_to_parser(parser)
+    args = parser.parse_args()
+    
+    output_dir = os.path.join(args.model_dir_path, 'visualization')
+    _make_dir_if_not_exists(output_dir)
+    config_dict = _load_configuration(os.path.join(args.model_dir_path, 'config.yml'))
+
+    kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
+    train_labeled_loader, train_unlabeled_loader, valid_loader = load_data(
+        data_path=args.dir_path, batch_size=args.batch_size, **kwargs)
+        
+    from ._model import Q_net, P_net
+    
+    Q = Q_net().load(
+        os.path.join(args.model_dir_path, 'encoder_{}'.format(args.training_mode)), 
+        z_size=args.z_size,
+        n_classes=args.n_classes,
+        hidden_size=config_dict['model']['hidden_size'])
+        
+    P = P_net().load(
+        os.path.join(args.model_dir_path, 'decoder_{}'.format(args.training_mode)),
+        z_size=args.z_size,
+        n_classes=args.n_classes,
+        hidden_size=config_dict['model']['hidden_size'])
+
+    highest_loss_digit(Q, P, valid_loader)
+    plot_latent_distribution(Q, valid_loader, output_dir)
+    print(plot_predicted_label_distribution(Q, valid_loader, args.n_classes, output_dir))
+    print(unsupervised_accuracy_score(Q, valid_loader, args.n_classes))
+    show_learned_latent_features(P, args.n_classes, args.z_size, output_dir)
+    show_samples_of_classes_and_reconstructions(Q, P, valid_loader, args.n_classes, args.z_size, output_dir)
+
+    if args.training_mode == 'unsupervised':
+        P_mode_decoder = P_net().load(
+            os.path.join(args.model_dir_path, 'mode_decoder_unsupervised'),
+            z_size=0,  
+            n_classes=args.n_classes,
+            hidden_size=config_dict['model']['hidden_size'])
+        show_all_learned_modes(P_mode_decoder, args.n_classes, output_dir)
+    
+    
 def _save_learning_curve(series, title, legend, path):
     plt.figure()
     plt.plot(list(zip(*series)))
@@ -170,13 +222,20 @@ def _add_output_dir_path_to_parser(parser):
         default=os.path.join('out', datetime.now().strftime("%Y-%m-%d-%H:%M:%S")),
         help='Path of the output directory')
 
+def _add_model_path_to_parser(parser):
+    parser.add_argument(
+        '--model-dir-path',
+        dest='model_dir_path',
+        required=True,
+        help='Path of the model directory')
+
 def _add_configuration_path_to_parser(parser):
     parser.add_argument(
         '--config-path',
         dest='config_path',
         default='source/_config.yml',
         help='Path of the configuration YAML file (default: local default configuration)')
-
+        
 def _add_batch_size_to_parser(parser):
     parser.add_argument(
         '--batch-size',
@@ -209,6 +268,14 @@ def _add_z_gauss_size_to_parser(parser):
         default=5,
         help='Number of nodes used by the latent gauss distributed z encoding (default: 5)')
 
+def _add_training_mode_to_parser(parser):
+    parser.add_argument(
+        '--mode',
+        dest='training_mode',
+        required=True,
+        choices=['semi_supervised', 'unsupervised'],
+        help='The mode the model was trained by')
+        
 def _make_dir_if_not_exists(dir_):
     if not os.path.exists(dir_):
         os.makedirs(dir_)

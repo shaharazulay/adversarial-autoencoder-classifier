@@ -35,7 +35,8 @@ setup(
         'console_scripts': [
             'init_datasets = source._entry_points:init_datasets_main',
             'train_semi_supervised = source._entry_points:train_semi_supervised_model_main',
-            'train_unsupervised = source._entry_points:train_unsupervised_model_main'
+            'train_unsupervised = source._entry_points:train_unsupervised_model_main',
+            'generate_model_visualization = source._entry_points:generate_trained_model_visualization_main'
         ]
     },
     license='bsd',

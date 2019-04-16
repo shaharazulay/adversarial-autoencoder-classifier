@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from collections import Counter
 import torch
@@ -10,29 +11,32 @@ matplotlib.use("TKAgg")
 from matplotlib import gridspec
 import matplotlib.pyplot as plt
 
-from _train_utils import predict_labels
+from ._train_utils import predict_labels
+
+cuda = torch.cuda.is_available()
 
 
-def show_samples_of_classes_and_reconstructions(Q, P, valid_loader, n_classes=10, z_dim=2):
+def show_samples_of_classes_and_reconstructions(Q, P, valid_loader, n_classes, z_dim, output_dir):
     batch_size = valid_loader.batch_size
+    n = len(valid_loader)
+    selected_batch_id = np.random.randint(0, n - 1)
+    
     labels = []
 
-    for _, (X, y) in enumerate(valid_loader):
+    for batch_id, (X, y) in enumerate(valid_loader):
+        if batch_id == selected_batch_id:
+            X.resize_(batch_size, Q.input_size)
 
-        X.resize_(batch_size, Q.input_size)
+            X, y = Variable(X), Variable(y)
+            if cuda:
+                X, y = X.cuda(), y.cuda()
 
-        X, y = Variable(X), Variable(y)
-        if cuda:
-            X, y = X.cuda(), y.cuda()
-
-        show_sample_from_each_class(Q, P, X, n_classes=n_classes, z_dim=z_dim)
-        plt.show()
-
-        show_reconstruction(Q, P, X)
-        plt.show()
+            show_sample_from_each_class(Q, P, X, n_classes, z_dim, output_dir)
+            show_reconstruction(Q, P, X, output_dir)
+            return
 
 
-def show_reconstruction(Q, P, X):
+def show_reconstruction(Q, P, X, output_dir):
     Q.eval()
     P.eval()
 
@@ -43,14 +47,16 @@ def show_reconstruction(Q, P, X):
 
     img_orig = np.array(X[0].data.tolist()).reshape(28, 28)
     img_rec = np.array(X_rec[0].data.tolist()).reshape(28, 28)
+    
+    plt.figure()
     plt.subplot(1, 2, 1)
     plt.imshow(img_orig, cmap='gray')
     plt.subplot(1, 2, 2)
     plt.imshow(img_rec, cmap='gray')
     plt.title('predicted label: %s' % torch.argmax(latent_y, dim=1)[0])
+    plt.savefig(os.path.join(output_dir, 'reconstruction_example.png'))
 
-
-def show_sample_from_each_class(Q, P, X, n_classes, z_dim):
+def show_sample_from_each_class(Q, P, X, n_classes, z_dim, output_dir):
 
     Q.eval()
 
@@ -63,7 +69,7 @@ def show_sample_from_each_class(Q, P, X, n_classes, z_dim):
     for label in range(n_classes):
         label_indices = np.where(y_class == label)
         try:
-            X_samples[label] = X[label_indices][:8, :]  # take first 8   images
+            X_samples[label] = X[label_indices][:8, :]  # take first 8 images
         except:
             X_samples[label] = None
 
@@ -101,10 +107,10 @@ def show_sample_from_each_class(Q, P, X, n_classes, z_dim):
                     col.imshow(np.zeros((28, 28)), cmap='gray')
 
     plt.suptitle('Representative mode & samples from each possible label')
-    fig.show()
+    plt.savefig(os.path.join(output_dir, 'modes_and_samples_from_each_label.png'))
 
 
-def plot_latent_distribution(P, valid_loader):
+def plot_latent_distribution(Q, valid_loader, output_dir):
     batch_size = valid_loader.batch_size
     labels = []
 
@@ -125,15 +131,15 @@ def plot_latent_distribution(P, valid_loader):
     plt.figure()
     plt.hist(y_highest_prob, bins=15)
     plt.title('distribution of highest "probability" given by the latent y vector')
-    plt.show()
+    plt.savefig(os.path.join(output_dir, 'y_distribution.png'))
 
     plt.figure()
     plt.hist(latent_z.detach().numpy()[:, 0])
     plt.title('distribution of the first element of the latent z vector')
-    plt.show()
+    plt.savefig(os.path.join(output_dir, 'z_distribution.png'))
 
 
-def plot_predicted_label_distribution(P, valid_loader, n_classes=10):
+def plot_predicted_label_distribution(Q, valid_loader, n_classes, output_dir):
     batch_size = valid_loader.batch_size
     labels = []
 
@@ -153,15 +159,16 @@ def plot_predicted_label_distribution(P, valid_loader, n_classes=10):
     plt.figure()
     plt.title('distribution of the predicted labels')
     plt.hist(labels, bins=n_classes)
-    plt.show()
+    plt.savefig(os.path.join(output_dir, 'predicted_label_distribution.png'))
 
     return Counter(labels)
 
 
-def show_learned_latent_features(P, n_classes=10, z_dim=2):
+def show_learned_latent_features(P, n_classes, z_dim, output_dir):
 
     subplot_ind = 1
-
+    plt.figure()
+    
     for label in range(n_classes):
         latent_y = np.eye(n_classes)[label].astype('float32')
         latent_y = torch.from_numpy(latent_y)
@@ -182,9 +189,9 @@ def show_learned_latent_features(P, n_classes=10, z_dim=2):
             subplot_ind += 1
 
     plt.suptitle('latent feature impact of decoded image')
-    plt.show()
+    plt.savefig(os.path.join(output_dir, 'learned_latent_features.png'))
 
-def show_all_learned_modes(P_mode_decoder, n_classes=10):
+def show_all_learned_modes(P_mode_decoder, n_classes, output_dir):
 
     for label in range(n_classes):
         latent_y = np.eye(n_classes)[label].astype('float32')
@@ -199,25 +206,10 @@ def show_all_learned_modes(P_mode_decoder, n_classes=10):
         plt.axis('off')
 
     plt.suptitle('learned modes')
-    plt.show()
+    plt.savefig(os.path.join(output_dir, 'learned_modes.png'))
 
 
-def generate_digits(P, label, n_classes=10, z_dim=2):
-    P.eval()
-
-    latent_y = np.eye(n_classes)[label].astype('float32')
-    latent_y = Variable(torch.from_numpy(latent_y).resize_(1, n_classes))
-
-    while True:
-        latent_z = Variable(torch.randn(1, z_dim))
-        latent_vec = torch.cat((latent_y, latent_z), 1)
-
-        X_rec = P(latent_vec)
-        plt.imshow(np.array(X_rec[0].data.tolist()).reshape(28, 28), cmap='gray')
-        plt.show()
-
-
-def unsupervised_accuracy_score(Q, valid_loader, n_classes=10):
+def unsupervised_accuracy_score(Q, valid_loader, n_classes):
     batch_size = valid_loader.batch_size
     labels = []
 
@@ -292,32 +284,3 @@ def highest_loss_digit(Q, P, valid_loader):
     highest_weight_label = max(weights_per_label, key=weights_per_label.get)
     print("\nhighest label weights is the digit {}".format(highest_weight_label))
     print(weights_per_label)
-    
-
-import os
-from _model import Q_net, P_net
-
-mode = 'unsupervised'
-data_dir = '../out/2019-04-16-07_27_54'
-#data_dir = '../data/2.3 10:40AM'
-n_classes = 10
-z_dim = 5
-hidden_size = 3000
-
-Q = Q_net().load(os.path.join(data_dir, 'encoder_{}'.format(mode)), z_size=z_dim, n_classes=n_classes, hidden_size=hidden_size)
-P = P_net().load(os.path.join(data_dir, 'decoder_{}'.format(mode)), z_size=z_dim, n_classes=n_classes, hidden_size=hidden_size)
-P_mode_decoder = P_net().load(os.path.join(data_dir, 'mode_decoder_unsupervised'), z_size=0, n_classes=n_classes, hidden_size=hidden_size)
-
-import _data_utils
-cuda = torch.cuda.is_available()
-kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
-train_labeled_loader, train_unlabeled_loader, valid_loader = _data_utils.load_data(
-    data_path='../data', batch_size=100, **kwargs)
-
-print(highest_loss_digit(Q, P, valid_loader))
-plot_latent_distribution(P, valid_loader)
-print(plot_predicted_label_distribution(P, valid_loader, n_classes=n_classes))
-print(unsupervised_accuracy_score(Q, valid_loader, n_classes=n_classes))
-show_learned_latent_features(P, n_classes=n_classes, z_dim=z_dim)
-show_all_learned_modes(P_mode_decoder, n_classes=n_classes)
-show_samples_of_classes_and_reconstructions(Q, P, valid_loader, n_classes=n_classes, z_dim=z_dim)
