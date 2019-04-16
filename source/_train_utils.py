@@ -106,7 +106,7 @@ def get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader
         for x, x_rec, y_true in zip(X, X_rec, target):
             # Reconstruction loss
             loss = F.binary_cross_entropy(x_rec, x)
-            weights = torch.cat((weights, loss), dim=0)
+            weights = torch.stack((weights, loss))
 
     weights = (weights - torch.min(weights))/ (torch.max(weights) - torch.min(weights))
     print(weights.shape)
