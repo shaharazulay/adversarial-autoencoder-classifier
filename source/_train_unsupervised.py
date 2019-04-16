@@ -261,7 +261,7 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
 
         learning_curve.append(all_losses)
 
-        weights = get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader)
+        #weights = get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader)
         
         if epoch % 1 == 0:
             val_acc = unsupervised_classification_accuracy(Q, valid_loader, n_classes=n_classes)

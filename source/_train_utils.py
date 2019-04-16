@@ -109,8 +109,7 @@ def get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader
             weights = torch.cat((weights, torch.unsqueeze(loss, dim=0)))
 
     weights = (weights - torch.min(weights))/ (torch.max(weights) - torch.min(weights))
-    print(weights.shape)
-    
+        
     ## for validation
     weights_per_label = {}
     for batch_num, (X, target) in enumerate(valid_loader):
