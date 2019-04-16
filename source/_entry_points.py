@@ -182,6 +182,10 @@ def generate_trained_model_visualization_main(args=None):
         z_size=args.z_size,
         n_classes=args.n_classes,
         hidden_size=config_dict['model']['hidden_size'])
+    
+    if cuda:
+        Q = Q.cuda()
+        P = P.cuda()
 
     highest_loss_digit(Q, P, valid_loader)
     plot_latent_distribution(Q, valid_loader, output_dir)
@@ -196,6 +200,9 @@ def generate_trained_model_visualization_main(args=None):
             z_size=0,  
             n_classes=args.n_classes,
             hidden_size=config_dict['model']['hidden_size'])
+        if cuda:
+            P_mode_decoder = P_mode_decoder.cuda()
+            
         show_all_learned_modes(P_mode_decoder, args.n_classes, output_dir)
     
     
