@@ -46,6 +46,7 @@ def train_semi_supervised_model_main(args=None):
 
     _make_dir_if_not_exists(args.output_dir_path)
     config_dict = _load_configuration(args.config_path)['semi_supervised']
+    print ('\nusing configuration:\n {}'.format(config_dict))
 
     Q, P, learning_curve = train_semi_supervised(
         train_labeled_loader,
@@ -106,6 +107,7 @@ def train_unsupervised_model_main(args=None):
 
     _make_dir_if_not_exists(args.output_dir_path)
     config_dict = _load_configuration(args.config_path)['unsupervised']
+    print ('\nusing configuration:\n {}'.format(config_dict))
 
     Q, P, P_mode_decoder, learning_curve = train_unsupervised(
         train_unlabeled_loader,
