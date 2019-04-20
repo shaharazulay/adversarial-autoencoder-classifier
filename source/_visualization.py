@@ -59,7 +59,7 @@ def show_sample_from_each_class(Q, P, X, n_classes, z_dim, output_dir):
     Q.eval()
 
     latent_y, latent_z = Q(X)
-    y_class = torch.argmax(latent_y, dim=1).numpy()
+    y_class = torch.argmax(latent_y, dim=1).cpu().numpy()
 
     fig, ax = plt.subplots(nrows=n_classes, ncols=9)
 
@@ -123,7 +123,7 @@ def plot_latent_distribution(Q, valid_loader, output_dir):
 
     y_highest_prob = []
     for latent_y_vec in latent_y:
-        sorted_p = latent_y_vec.sort(descending=True)[0].detach().numpy()
+        sorted_p = latent_y_vec.sort(descending=True)[0].detach().cpu().numpy()
         y_highest_prob.append(sorted_p[0])
 
     plt.figure()
@@ -132,7 +132,7 @@ def plot_latent_distribution(Q, valid_loader, output_dir):
     plt.savefig(os.path.join(output_dir, 'y_distribution.png'))
 
     plt.figure()
-    plt.hist(latent_z.detach().numpy()[:, 0])
+    plt.hist(latent_z.detach().cpu().numpy()[:, 0])
     plt.title('distribution of the first element of the latent z vector')
     plt.savefig(os.path.join(output_dir, 'z_distribution.png'))
 
@@ -152,7 +152,7 @@ def plot_predicted_label_distribution(Q, valid_loader, n_classes, output_dir):
         y_pred = predict_labels(Q, X)
         latent_y, latent_z = Q(X)
 
-        labels.extend(y_pred.numpy())
+        labels.extend(y_pred.cpu().numpy())
 
     plt.figure()
     plt.title('distribution of the predicted labels')
