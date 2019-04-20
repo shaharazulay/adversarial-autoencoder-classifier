@@ -178,6 +178,9 @@ def show_learned_latent_features(P, n_classes, z_dim, output_dir):
             latent_z[0, 0] = z0
 
             latent_vec = torch.cat((latent_y, latent_z), 1)
+            if cuda:
+                latent_vec = latent_vec.cuda()
+                
             X_mode_rec = P(latent_vec)
 
             mode_img = np.array(X_mode_rec.data.tolist()).reshape(28, 28)
@@ -196,6 +199,9 @@ def show_all_learned_modes(P_mode_decoder, n_classes, output_dir):
         latent_y = torch.from_numpy(latent_y)
         latent_y = Variable(latent_y)
 
+        if cuda:
+            latent_y = latent_y.cuda()
+            
         X_mode_rec = P_mode_decoder(latent_y)
         mode_img = np.array(X_mode_rec.data.tolist()).reshape(28, 28)
         plt.subplot(1, n_classes, label + 1)
