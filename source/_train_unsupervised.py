@@ -128,7 +128,6 @@ def _train_epoch(
         # Generator phase
         #######################
         z_real_cat = sample_categorical(batch_size, n_classes=n_classes)
-        print(torch.argmax(z_real_cat, dim=1)) ###
         z_real_gauss = Variable(torch.randn(batch_size, z_dim))
         if cuda:
             z_real_cat = z_real_cat.cuda()
