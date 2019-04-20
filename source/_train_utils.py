@@ -34,7 +34,8 @@ def sample_categorical(batch_size, n_classes=10, label=None):
      of size batch_size and # of classes n_classes
      return: torch.autograd.Variable with the sample
     '''
-    cat = 1#np.random.randint(0, n_classes, batch_size)
+    #cat = np.random.randint(0, n_classes, batch_size)
+    cat = np.random.choice([1, 3])
     cat = np.eye(n_classes)[cat].astype('float32')
     cat = torch.from_numpy(cat)
     return Variable(cat)
