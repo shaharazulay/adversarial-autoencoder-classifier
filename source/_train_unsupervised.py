@@ -11,7 +11,7 @@ from ._model import Q_net, P_net, D_net_cat, D_net_gauss
 from ._train_utils import *
 
 cuda = torch.cuda.is_available()
-seed = 13
+seed = 14
 
 
 def _train_epoch(
