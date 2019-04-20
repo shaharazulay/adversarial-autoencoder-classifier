@@ -239,7 +239,7 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
     '''
     Train the full model.
     '''
-    #torch.manual_seed(10)
+    torch.manual_seed(seed)
     learning_curve = []
 
     models = _get_models(n_classes, z_dim, config_dict)
