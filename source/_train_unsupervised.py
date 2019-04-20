@@ -11,7 +11,7 @@ from ._model import Q_net, P_net, D_net_cat, D_net_gauss
 from ._train_utils import *
 
 cuda = torch.cuda.is_available()
-seed = 11
+seed = 0
 
 
 def _train_epoch(
@@ -240,6 +240,8 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
     Train the full model.
     '''
     torch.manual_seed(seed)
+    np.random.seed(seed)
+    
     learning_curve = []
 
     models = _get_models(n_classes, z_dim, config_dict)
