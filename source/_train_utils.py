@@ -34,11 +34,19 @@ def sample_categorical(batch_size, n_classes=10, label=None):
      of size batch_size and # of classes n_classes
      return: torch.autograd.Variable with the sample
     '''
-    #cat = np.random.randint(0, n_classes, batch_size)
-    cat = np.random.choice([1, 3])
+    cat = np.random.randint(0, n_classes, batch_size)
     cat = np.eye(n_classes)[cat].astype('float32')
     cat = torch.from_numpy(cat)
     return Variable(cat)
+    
+def get_categorial_weights(latent_y, batch_size, n_classes=10):
+    pred_labels = torch.argmax(latent_y, dim=1)
+    p = np.zeros((n_classes,)
+    for label in pred_labels:
+        p[label] += 1
+    expected = batch_size / n_classes
+    w = np.exp(expected - p)
+    return w
 
 def classification_accuracy(Q, data_loader):
     correct = 0

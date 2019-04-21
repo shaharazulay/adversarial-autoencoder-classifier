@@ -52,11 +52,7 @@ def _train_epoch(
         latent_vec = torch.cat(Q(X_noisy), 1)
         X_rec = P(latent_vec)
 
-        #recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
-        ###
-        euclidean_loss = torch.nn.MSELoss()
-        recon_loss = 0.5 * euclidean_loss(X_rec, X)
-        ###
+        recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
         
         recon_loss.backward()
         auto_encoder_optim.step()
@@ -127,12 +123,6 @@ def _train_epoch(
         #######################
         # Generator phase
         #######################
-        z_real_cat = sample_categorical(batch_size, n_classes=n_classes)
-        z_real_gauss = Variable(torch.randn(batch_size, z_dim))
-        if cuda:
-            z_real_cat = z_real_cat.cuda()
-            z_real_gauss = z_real_gauss.cuda()
-
         Q.train()
         z_fake_cat, z_fake_gauss = Q(X)
 
@@ -152,6 +142,16 @@ def _train_epoch(
         #######################
         Q.eval()
         z_fake_cat, z_fake_gauss = Q(X)
+
+        z_real_cat = sample_categorical(batch_size, n_classes=n_classes)
+        z_real_gauss = Variable(torch.randn(batch_size, z_dim))
+        if cuda:
+            z_real_cat = z_real_cat.cuda()
+            z_real_gauss = z_real_gauss.cuda()
+
+        ###
+        print(get_categorial_weights(z_fake_cat, batch_size, n_classes=n_classes))
+        ###
 
         D_real_cat = D_cat(z_real_cat)
         D_real_gauss = D_gauss(z_real_gauss)
