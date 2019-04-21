@@ -28,18 +28,27 @@ def get_categorial(label, n_classes=10):
     latent_y = torch.from_numpy(latent_y)
     return Variable(latent_y)
 
-def sample_categorical(batch_size, n_classes=10, label=None):
+def sample_categorical(batch_size, n_classes=10, p=None):
     '''
      Sample from a categorical distribution
      of size batch_size and # of classes n_classes
+     In case stated, a sampling probability given by p is used.
      return: torch.autograd.Variable with the sample
     '''
-    cat = np.random.randint(0, n_classes, batch_size)
+    #cat = np.random.randint(0, n_classes, batch_size)
+    cat = np.random.choice(range(n_classes), size=batch_size, p=p)
     cat = np.eye(n_classes)[cat].astype('float32')
     cat = torch.from_numpy(cat)
     return Variable(cat)
     
-def get_categorial_weights(latent_y, batch_size, n_classes=10):
+def get_adversarial_categorial_weights(latent_y, batch_size, n_classes=10):
+    '''
+     Calculate the probabilties that will be used in the adversarial training 
+     when training the categorial discriminator.
+     The probabilities are the reverse probabilities of the abundance of each class
+     in the output of the encoder (meaning less used classes, will be given higher weight).
+     return: array, of probabilities
+    '''
     pred_labels = torch.argmax(latent_y, dim=1)
     p = np.zeros((n_classes,))
     for label in pred_labels:
