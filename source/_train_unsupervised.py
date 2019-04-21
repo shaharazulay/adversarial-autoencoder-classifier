@@ -65,7 +65,7 @@ def _train_epoch(
         #######################
         continuous_loss = torch.nn.MSELoss()
 
-        latent_y, latent_z = Q(X)
+        latent_y, latent_z = Q(X_noisy)
         latent_vec = torch.cat((latent_y, latent_z), 1)
         X_rec = P(latent_vec)
 
@@ -147,7 +147,7 @@ def _train_epoch(
         p_cat = None
         
         z_real_cat = sample_categorical(batch_size, n_classes=n_classes, p=p_cat)
-        z_real_gauss = Variable(torch.randn(batch_size, z_dim) * 0.1 + torch.argmax(z_real_cat, dim=1) / n_classes)
+        z_real_gauss = Variable(torch.randn(batch_size, z_dim) * 0.1) ####
         if cuda:
             z_real_cat = z_real_cat.cuda()
             z_real_gauss = z_real_gauss.cuda()
