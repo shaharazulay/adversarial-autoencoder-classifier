@@ -143,7 +143,8 @@ def _train_epoch(
         Q.eval()
         z_fake_cat, z_fake_gauss = Q(X)
 
-        p_cat = get_adversarial_categorial_weights(z_fake_cat, batch_size, n_classes=n_classes)
+        #p_cat = get_adversarial_categorial_weights(z_fake_cat, batch_size, n_classes=n_classes)
+        p_cat = None
         
         z_real_cat = sample_categorical(batch_size, n_classes=n_classes, p=p_cat)
         z_real_gauss = Variable(torch.randn(batch_size, z_dim))

@@ -89,6 +89,8 @@ def show_sample_from_each_class(Q, P, X, n_classes, z_dim, output_dir):
                 latent_z = Variable(torch.zeros(1, z_dim))
 
                 latent_vec = torch.cat((latent_y, latent_z), 1)
+                if cuda:
+                    latent_vec = latent_vec.cuda()
                 X_mode_rec = P(latent_vec)
 
                 mode_img = np.array(X_mode_rec.data.tolist()).reshape(28, 28)
