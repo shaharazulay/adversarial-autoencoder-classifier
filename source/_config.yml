@@ -12,7 +12,7 @@ unsupervised:
   training:
     use_mutual_info: False
     use_mode_decoder: False
-    use_adam_optimization: False
+    use_adam_optimization: True
 
 # sem-supervised learning configurations
 semi_supervised:
