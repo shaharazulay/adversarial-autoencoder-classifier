@@ -149,10 +149,6 @@ def _train_epoch(
             z_real_cat = z_real_cat.cuda()
             z_real_gauss = z_real_gauss.cuda()
 
-        ###
-        print(get_categorial_weights(z_fake_cat, batch_size, n_classes=n_classes))
-        ###
-
         D_real_cat = D_cat(z_real_cat)
         D_real_gauss = D_gauss(z_real_gauss)
         D_fake_cat = D_cat(z_fake_cat)
@@ -174,6 +170,9 @@ def _train_epoch(
         # report progress
         report_progress(float(batch_num) / n_batches)
         
+        ###
+        print(get_categorial_weights(z_fake_cat, batch_size, n_classes=n_classes))
+        ###
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss
 
 
