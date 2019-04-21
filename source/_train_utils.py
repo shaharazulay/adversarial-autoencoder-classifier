@@ -41,7 +41,7 @@ def sample_categorical(batch_size, n_classes=10, label=None):
     
 def get_categorial_weights(latent_y, batch_size, n_classes=10):
     pred_labels = torch.argmax(latent_y, dim=1)
-    p = np.zeros((n_classes,)
+    p = np.zeros((n_classes,))
     for label in pred_labels:
         p[label] += 1
     expected = batch_size / n_classes
