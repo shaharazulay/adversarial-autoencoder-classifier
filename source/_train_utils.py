@@ -46,7 +46,8 @@ def get_categorial_weights(latent_y, batch_size, n_classes=10):
         p[label] += 1
     expected = batch_size / n_classes
     w = np.exp(expected - p)
-    return w
+    p_w = w / sum(w)
+    return p_w
 
 def classification_accuracy(Q, data_loader):
     correct = 0

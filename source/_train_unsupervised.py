@@ -170,9 +170,9 @@ def _train_epoch(
         # report progress
         report_progress(float(batch_num) / n_batches)
         
-        ###
-        print(get_categorial_weights(z_fake_cat, batch_size, n_classes=n_classes))
-        ###
+    ###
+    print(get_categorial_weights(z_fake_cat, batch_size, n_classes=n_classes))
+    ###
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss
 
 
