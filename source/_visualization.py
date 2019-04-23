@@ -266,27 +266,60 @@ def unsupervised_accuracy_score(Q, valid_loader, n_classes):
     print(pred_to_true)
     return true_to_pred
 
-def highest_loss_digit(Q, P, valid_loader):
+# def highest_loss_digit(Q, P, valid_loader):
+#     batch_size = valid_loader.batch_size
+# 
+#     weights_per_label = {}
+#     for batch_num, (X, target) in enumerate(valid_loader):
+# 
+#         X.resize_(batch_size, Q.input_size)
+#         X, target = Variable(X), Variable(target)
+#         if cuda:
+#             X, target = X.cuda(), target.cuda()
+# 
+#         latent_vec = torch.cat(Q(X), 1)
+#         X_rec = P(latent_vec)
+# 
+#         for x, x_rec, y_true in zip(X, X_rec, target):
+#             # Reconstruction loss
+#             loss = F.binary_cross_entropy(x_rec, x)
+# 
+#             weights_per_label.setdefault(y_true.item(), 0)
+#             weights_per_label[y_true.item()] += loss.item()
+# 
+#     highest_weight_label = max(weights_per_label, key=weights_per_label.get)
+#     print("\nhighest label weights is the digit {}".format(highest_weight_label))
+#     print(weights_per_label)
+    
+def show_latent_space_manifold(Q, valid_loader):
+    from sklearn.manifold import TSNE
+    tsne = TSNE(n_components=2, random_state=0)
+    
     batch_size = valid_loader.batch_size
     
-    weights_per_label = {}
-    for batch_num, (X, target) in enumerate(valid_loader):
+    latent_layer = torch.Torch()
+    labels = []
+
+    for _, (X, y) in enumerate(valid_loader):
 
         X.resize_(batch_size, Q.input_size)
-        X, target = Variable(X), Variable(target)
+
+        X, y = Variable(X), Variable(y)
         if cuda:
-            X, target = X.cuda(), target.cuda()
+            X, y = X.cuda(), y.cuda()
 
-        latent_vec = torch.cat(Q(X), 1)
-        X_rec = P(latent_vec)
+        latent_y, latent_z = Q(X)
+        latent_vec = torch.cat((latent_y, latent_z), 1)
+        latent_layer = torch.cat((latent_layer, latent_vec))
         
-        for x, x_rec, y_true in zip(X, X_rec, target):
-            # Reconstruction loss
-            loss = F.binary_cross_entropy(x_rec, x)
+        y_pred = predict_labels(Q, X)
+        labels.extend(y_pred)
 
-            weights_per_label.setdefault(y_true.item(), 0)
-            weights_per_label[y_true.item()] += loss.item()
-            
-    highest_weight_label = max(weights_per_label, key=weights_per_label.get)
-    print("\nhighest label weights is the digit {}".format(highest_weight_label))
-    print(weights_per_label)
+    latent_2d = tsne.fit_transform(latent_layer[:1000, :])
+    
+    plt.figure(figsize=(6, 5))
+    colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'w', 'orange', 'purple'
+    for label, c in zip(range(10), colors):
+        plt.scatter(latent_2d[labels == label, 0], latent_2d[labels == label, 1], c=c, label=label)
+    plt.legend()
+    plt.show()
