@@ -291,7 +291,7 @@ def unsupervised_accuracy_score(Q, valid_loader, n_classes):
 #     print("\nhighest label weights is the digit {}".format(highest_weight_label))
 #     print(weights_per_label)
     
-def show_latent_space_manifold(Q, valid_loader):
+def show_latent_space_manifold(Q, valid_loader, output_dir):
     from sklearn.manifold import TSNE
     tsne = TSNE(n_components=2, random_state=0)
     
@@ -322,5 +322,6 @@ def show_latent_space_manifold(Q, valid_loader):
     colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'w', 'orange', 'purple'
     for label, c in zip(range(10), colors):
         plt.scatter(latent_2d[labels[:1000] == label, 0], latent_2d[labels[:1000] == label, 1], c=c, label=label, edgecolors='k')
-    plt.legend()
-    plt.show()
+    plt.legend()    
+    plt.suptitle('latent features TSNE visualization')
+    plt.savefig(os.path.join(output_dir, 'latent_features_tnse.png'))

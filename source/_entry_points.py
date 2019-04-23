@@ -187,7 +187,7 @@ def generate_trained_model_visualization_main(args=None):
         Q = Q.cuda()
         P = P.cuda()
 
-    show_latent_space_manifold(Q, valid_loader)
+    show_latent_space_manifold(Q, valid_loader, output_dir)
     plot_latent_distribution(Q, valid_loader, output_dir)
     print(plot_predicted_label_distribution(Q, valid_loader, args.n_classes, output_dir))
     print(unsupervised_accuracy_score(Q, valid_loader, args.n_classes))
