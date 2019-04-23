@@ -5,7 +5,7 @@ unsupervised:
     generator_lr: 0.002
     discriminator_lr: 0.0002
     info_lr: 0.0001 #0.0002
-    mode_lr: 0.0008
+    mode_lr: 0.0001 #0.0008
   model:
     hidden_size: 3000
     encoder_dropout: 0.2
