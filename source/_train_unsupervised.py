@@ -65,7 +65,7 @@ def _train_epoch(
         #######################
         continuous_loss = torch.nn.MSELoss()
 
-        latent_y, latent_z = Q(X_noisy)
+        latent_y, latent_z = Q(X)
         latent_vec = torch.cat((latent_y, latent_z), 1)
         X_rec = P(latent_vec)
 
