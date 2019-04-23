@@ -313,7 +313,8 @@ def show_latent_space_manifold(Q, valid_loader, output_dir):
         latent_layer = torch.cat((latent_layer, latent_vec))
         
         y_pred = predict_labels(Q, X)
-        labels.extend(y_pred)
+        labels.extend(y)
+        pred_labels.extend(y_pred)
 
     latent_2d = tsne.fit_transform(latent_layer.detach().numpy()[:1000, :])
     labels = np.array(labels)
