@@ -297,7 +297,7 @@ def show_latent_space_manifold(Q, valid_loader):
     
     batch_size = valid_loader.batch_size
     
-    latent_layer = torch.Torch()
+    latent_layer = torch.Tensor()
     labels = []
 
     for _, (X, y) in enumerate(valid_loader):
@@ -315,11 +315,12 @@ def show_latent_space_manifold(Q, valid_loader):
         y_pred = predict_labels(Q, X)
         labels.extend(y_pred)
 
-    latent_2d = tsne.fit_transform(latent_layer[:1000, :])
+    latent_2d = tsne.fit_transform(latent_layer.detach().numpy()[:1000, :])
+    labels = np.array(labels)
     
     plt.figure(figsize=(6, 5))
     colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'w', 'orange', 'purple'
     for label, c in zip(range(10), colors):
-        plt.scatter(latent_2d[labels == label, 0], latent_2d[labels == label, 1], c=c, label=label)
+        plt.scatter(latent_2d[labels[:1000] == label, 0], latent_2d[labels[:1000] == label, 1], c=c, label=label, edgecolors='k')
     plt.legend()
     plt.show()

@@ -13,7 +13,7 @@ unsupervised:
     use_mutual_info: False
     use_mode_decoder: False
     use_adam_optimization: True
-    lambda_z_l2_regularization: 1
+    lambda_z_l2_regularization: 0.2
 
 # sem-supervised learning configurations
 semi_supervised:
