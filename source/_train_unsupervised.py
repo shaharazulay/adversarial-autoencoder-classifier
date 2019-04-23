@@ -102,23 +102,33 @@ def _train_epoch(
         # Mode disentanglement phase
         #######################
         # mode_disentanglement_loss = 0
-        #
+        # 
+        # latent_z_all_zeros = Variable(torch.zeros(1, z_dim))
+        # 
         # for label_A in range(n_classes):
         #     latent_y_A = get_categorial(label_A)
-        #     X_mode_rec_A = P_mode_decoder(latent_y_A)
-        #
+        # 
+        #     latent_vec_A = torch.cat((latent_y_A, latent_z_all_zeros), 1)
+        #     if cuda:
+        #         latent_vec_A = latent_vec_A.cuda()
+        #     X_mode_rec_A = P(latent_vec_A)
+        # 
         #     for label_B in range(label_A + 1, n_classes):
         #         latent_y_B = get_categorial(label_B)
-        #         X_mode_rec_B = P_mode_decoder(latent_y_B)
-        #
+        # 
+        #         latent_vec_B = torch.cat((latent_y_B, latent_z_all_zeros), 1)
+        #         if cuda:
+        #             latent_vec_B = latent_vec_B.cuda()
+        #         X_mode_rec_B = P(latent_vec_B)
+        # 
         #         mode_disentanglement_loss += -F.binary_cross_entropy(X_mode_rec_A + epsilon, X_mode_rec_B.detach() + epsilon)
-        #
+        # 
         # mode_disentanglement_loss /= (n_classes * (n_classes - 1) / 2)
         # mode_disentanglement_loss.backward()
-        # P_mode_decoder_optim.step()
-        #
-        # # Init gradients
-        # zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
+        # mode_optim.step()
+        # 
+        # Init gradients
+        zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         #######################
         # Generator phase
