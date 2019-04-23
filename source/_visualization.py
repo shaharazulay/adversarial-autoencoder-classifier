@@ -298,6 +298,9 @@ def show_latent_space_manifold(Q, valid_loader, output_dir):
     batch_size = valid_loader.batch_size
     
     latent_layer = torch.Tensor()
+    if cuda:
+        latent_layer = latent_layer.cuda()
+        
     labels = []
 
     for _, (X, y) in enumerate(valid_loader):
