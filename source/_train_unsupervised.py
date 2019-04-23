@@ -130,7 +130,8 @@ def _train_epoch(
         D_fake_gauss = D_gauss(z_fake_gauss)
 
         G_loss = - torch.mean(torch.log(D_fake_cat + epsilon)) - torch.mean(torch.log(D_fake_gauss + epsilon))
-
+        G_loss += nn.L2Loss()(z_fake_gauss) * 10  # Z L2 regularization####
+        
         G_loss.backward()
         G_optim.step()
 
