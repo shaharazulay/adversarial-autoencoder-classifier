@@ -103,7 +103,7 @@ def _train_epoch(
         #######################
         mode_disentanglement_loss = 0
         
-        latent_z_all_zeros = Variable(torch.zeros(, z_dim))
+        latent_z_all_zeros = Variable(torch.zeros(z_dim))
         
         for label_A in range(n_classes):
             latent_y_A = get_categorial(label_A)
