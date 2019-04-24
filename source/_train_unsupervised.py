@@ -101,31 +101,31 @@ def _train_epoch(
         #######################
         # Mode disentanglement phase
         #######################
-        # mode_disentanglement_loss = 0
-        # 
-        # latent_z_all_zeros = Variable(torch.zeros(1, z_dim))
-        # 
-        # for label_A in range(n_classes):
-        #     latent_y_A = get_categorial(label_A)
-        # 
-        #     latent_vec_A = torch.cat((latent_y_A, latent_z_all_zeros), 1)
-        #     if cuda:
-        #         latent_vec_A = latent_vec_A.cuda()
-        #     X_mode_rec_A = P(latent_vec_A)
-        # 
-        #     for label_B in range(label_A + 1, n_classes):
-        #         latent_y_B = get_categorial(label_B)
-        # 
-        #         latent_vec_B = torch.cat((latent_y_B, latent_z_all_zeros), 1)
-        #         if cuda:
-        #             latent_vec_B = latent_vec_B.cuda()
-        #         X_mode_rec_B = P(latent_vec_B)
-        # 
-        #         mode_disentanglement_loss += -F.binary_cross_entropy(X_mode_rec_A + epsilon, X_mode_rec_B.detach() + epsilon)
-        # 
-        # mode_disentanglement_loss /= (n_classes * (n_classes - 1) / 2)
-        # mode_disentanglement_loss.backward()
-        # mode_optim.step()
+        mode_disentanglement_loss = 0
+        
+        latent_z_all_zeros = Variable(torch.zeros(1, z_dim))
+        
+        for label_A in range(n_classes):
+            latent_y_A = get_categorial(label_A)
+        
+            latent_vec_A = torch.cat((latent_y_A, latent_z_all_zeros), 1)
+            if cuda:
+                latent_vec_A = latent_vec_A.cuda()
+            X_mode_rec_A = P(latent_vec_A)
+        
+            for label_B in range(label_A + 1, n_classes):
+                latent_y_B = get_categorial(label_B)
+        
+                latent_vec_B = torch.cat((latent_y_B, latent_z_all_zeros), 1)
+                if cuda:
+                    latent_vec_B = latent_vec_B.cuda()
+                X_mode_rec_B = P(latent_vec_B)
+        
+                mode_disentanglement_loss += -F.binary_cross_entropy(X_mode_rec_A + epsilon, X_mode_rec_B.detach() + epsilon)
+        
+        mode_disentanglement_loss /= (n_classes * (n_classes - 1) / 2)
+        mode_disentanglement_loss.backward()
+        mode_optim.step()
         # 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
@@ -184,7 +184,7 @@ def _train_epoch(
         # report progress
         report_progress(float(batch_num) / n_batches)
         
-    return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss
+    return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss, mode_disentanglement_loss
 
 
 def _get_optimizers(models, config_dict, decay=1.0):
@@ -209,8 +209,9 @@ def _get_optimizers(models, config_dict, decay=1.0):
     D_optim = optim.Adam(itertools.chain(D_gauss.parameters(), D_cat.parameters()), lr=discriminator_lr)
 
     info_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=info_lr)
-    mode_optim = optim.Adam(itertools.chain(Q.parameters(), P_mode_decoder.parameters()), lr=mode_lr)
-
+    #mode_optim = optim.Adam(itertools.chain(Q.parameters(), P_mode_decoder.parameters()), lr=mode_lr)
+    mode_optim = optim.Adam(Q.parameters(), lr=mode_lr)
+    
     if not config_dict['training']['use_adam_optimization']:
         auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.01 * decay, momentum=0.9)
         G_optim = optim.SGD(Q.parameters(), lr=0.1 * decay, momentum=0.1)
@@ -286,7 +287,7 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
                 all_losses,
                 descriptions=[
                     'D_loss_cat', 'D_loss_gauss', 'G_loss', 'recon_loss',
-                    'mode_recon_loss', 'mutual_info_loss'],
+                    'mode_recon_loss', 'mutual_info_loss', 'mode_disentanglement_loss'],
                 output_dir=output_dir)
             print('Unsupervised classification accuracy: {} %'.format(val_acc))
 

@@ -123,7 +123,8 @@ def train_unsupervised_model_main(args=None):
     P.save(os.path.join(args.output_dir_path, 'decoder_unsupervised'))
     P_mode_decoder.save(os.path.join(args.output_dir_path, 'mode_decoder_unsupervised'))
 
-    D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss = zip(*learning_curve)
+    D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss, mode_disentanglement_loss =\
+        zip(*learning_curve)
 
     _save_learning_curve(
         series=[D_loss_cat, D_loss_gauss, G_loss],
