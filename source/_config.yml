@@ -1,7 +1,7 @@
 # unsupervised learning configurations
 unsupervised:
   learning_rates:
-    auto_encoder_lr: 0.0008
+    auto_encoder_lr: 0.0004 #0.0008
     generator_lr: 0.002
     discriminator_lr: 0.0002
     info_lr: 0.0001 #0.0002
