@@ -318,7 +318,7 @@ def show_latent_space_manifold(Q, valid_loader, output_dir):
         y_pred = predict_labels(Q, X)
         labels.extend(y)
 
-    latent_2d = tsne.fit_transform(latent_layer.detach().numpy()[:1000, :])
+    latent_2d = tsne.fit_transform(latent_layer.cpu().detach().numpy()[:1000, :])
     labels = np.array(labels)
     
     plt.figure(figsize=(6, 5))
