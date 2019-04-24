@@ -5,13 +5,13 @@ unsupervised:
     generator_lr: 0.002
     discriminator_lr: 0.0002
     info_lr: 0.0001 #0.0002
-    mode_lr: 0.0006 #0.0008
+    mode_lr: 0.0008
   model:
     hidden_size: 3000
     encoder_dropout: 0.2
   training:
-    use_mutual_info: False
-    use_mode_decoder: True
+    use_mutual_info: True
+    use_mode_decoder: False
     use_adam_optimization: True
     lambda_z_l2_regularization: 0.1
 
