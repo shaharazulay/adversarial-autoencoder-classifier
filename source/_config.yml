@@ -14,6 +14,7 @@ unsupervised:
     use_mode_decoder: False
     use_adam_optimization: True
     lambda_z_l2_regularization: 0.1
+    lambda_info_loss: 10
 
 # sem-supervised learning configurations
 semi_supervised:

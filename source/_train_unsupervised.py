@@ -53,12 +53,14 @@ def _train_epoch(
         X_rec = P(latent_vec)
 
         recon_loss = F.binary_cross_entropy(X_rec + epsilon, X + epsilon)
+        #
+        ae_loss = recon_loss
+        #
+        #recon_loss.backward()
+        #auto_encoder_optim.step()
         
-        recon_loss.backward()
-        auto_encoder_optim.step()
-
         # Init gradients
-        zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
+        #zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
 
         #######################
         # Info phase
@@ -77,8 +79,14 @@ def _train_epoch(
         mutual_info_loss = 1.0 * cat_info_loss + 0.1 * gauss_info_loss
 
         if params['use_mutual_info']:
-            mutual_info_loss.backward()
-            info_optim.step()
+            ae_loss += params['lambda_info_loss'] * mutual_info_loss
+            # mutual_info_loss.backward()
+            # info_optim.step()
+        
+        #
+        ae_loss.backward()
+        auto_encoder_optim.step()
+        #
 
         # Init gradients
         zero_grad_all(P, Q, D_cat, D_gauss, P_mode_decoder)
