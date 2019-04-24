@@ -116,7 +116,7 @@ def _train_epoch(
             for label_B in range(label_A + 1, n_classes):
                 latent_y_B = get_categorial(label_B)
         
-                latent_vec_B = torch.cat((latent_y_B, latent_z_all_zeros), 1)
+                latent_vec_B = torch.cat((latent_y_B, latent_z_all_zeros), 0)
                 if cuda:
                     latent_vec_B = latent_vec_B.cuda()
                 X_mode_rec_B = P(latent_vec_B)
