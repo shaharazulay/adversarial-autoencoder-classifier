@@ -56,7 +56,7 @@ Shahar Azulay
         dataset size in use: 3000 [labeled trainset]  47000 [un-labeled trainset]  10000 [validation]
         ...
         
-   Visualize a trained model using pre-defined visualizations
+  Visualize a trained model using pre-defined visualizations
 
         >>> generate_model_visualization --dir-path <path-to-data-dir> --model-dir-path {<path-to-model-dir> --mode unsupervised --n-classes 10 --z-size 5
         loading data started...
@@ -72,3 +72,6 @@ Shahar Azulay
         Label 9: 40.1%, Best matching label; 22
         ACCURACY: 0.85%
         ...
+
+  Control the model and training hyper-parameters using a YAML configuration file
+        >>> train_unsupervised --dir-path <path-to-data-dir> --config-path <path-to-configuration-file> --n-epochs 35 --z-size 2 --n-classes 10 --batch-size 100
