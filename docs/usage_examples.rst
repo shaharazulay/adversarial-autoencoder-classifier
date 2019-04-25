@@ -51,3 +51,11 @@ As a result the following files will be created inside the model directory under
 
 Hyperparmeter configuration
 -----
+
+All hyper-paremeters are configurable via a YAML file.
+The only exclusions are the number of epochs, and the dimention of the latent z and y - which are all configurable via command line arguments when training the model.
+
+The YAML configuration file contains many training and model configurations (as can be seen below) and in any training command the user can provide a path to the wanted config file.
+An example config file is found in the source code, and is used by default if another path is not provided.
+
+.. image:: _static/config.png
