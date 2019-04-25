@@ -157,7 +157,7 @@ def _train_epoch(
         z_fake_cat, z_fake_gauss = Q(X)
 
         p_cat = None
-        if if params['use_disentanglement']:
+        if params['use_adversarial_categorial_weights']:
             p_cat = get_adversarial_categorial_weights(z_fake_cat, batch_size, n_classes=n_classes)
         
         z_real_cat = sample_categorical(batch_size, n_classes=n_classes, p=p_cat)
