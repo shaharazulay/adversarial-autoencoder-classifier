@@ -48,7 +48,9 @@ Shahar Azulay
          {'learning_rates': {'auto_encoder_lr': 0.0008, 'generator_lr': 0.002, 'discriminator_lr': 0.0002, 'info_lr': 1e-05,             'mode_lr': 0.0008, 'disentanglement_lr': 0}, 'model': {'hidden_size': 3000, 'encoder_dropout': 0.2}, 'training':               {'use_mutual_info': False, 'use_mode_decoder': False, 'use_disentanglement': True, 'use_adam_optimization': True,            'use_adversarial_categorial_weights': True, 'lambda_z_l2_regularization': 0.15}}
         current epoch:: [ ===================  ] 99.79%
         ...
-        
+  
+  .. image:: _static/unsupervised_advesarial_learning_curve.png
+  
   Train a new AAE in a Fully Unsupervised setting
 
         >>> train_unsupervised --dir-path <path-to-data-dir> --n-epochs 35 --z-size 2 --n-classes 10 --batch-size 100
@@ -73,5 +75,7 @@ Shahar Azulay
         ACCURACY: 0.85%
         ...
 
+  .. image:: _static/modes_and_samples_from_each_label.png
+  
   Control the model and training hyper-parameters using a YAML configuration file
         >>> train_unsupervised --dir-path <path-to-data-dir> --config-path <path-to-configuration-file> --n-epochs 35 --z-size 2 --n-classes 10 --batch-size 100
