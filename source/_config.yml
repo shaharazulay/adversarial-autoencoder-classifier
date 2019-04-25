@@ -13,7 +13,7 @@ unsupervised:
   training:
     use_mutual_info: False
     use_mode_decoder: False
-    use_disentanglement: True
+    use_disentanglement: False
     use_adam_optimization: True
     lambda_z_l2_regularization: 0.15
 
