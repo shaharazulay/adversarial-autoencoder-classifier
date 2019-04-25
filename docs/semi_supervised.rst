@@ -44,7 +44,7 @@ The training process is divided into three major parts:
 The success of the training process can be measured based on two grounds:
 
 **Validation accuracy** on a held out labeled validation set.
-The results of the semi-supervised model reached **94% accuracy**, which shows good performance and that the model learns the labeled part properly.
+The results of the semi-supervised model reached **97% accuracy**, which shows good performance and that the model learns the labeled part properly.
 
 .. image:: _static/semi_supervised_samples_from_all_lables.png
 
