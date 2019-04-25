@@ -44,7 +44,6 @@ Shahar Azulay
         >>> train_semi_supervised --dir-path <path-to-data-dir> --n-epochs 35 --z-size 2 --n-classes 10 --batch-size 100
         loading data started...
         dataset size in use: 3000 [labeled trainset]  47000 [un-labeled trainset]  10000 [validation]
-
         using configuration:
          {'learning_rates': {'auto_encoder_lr': 0.0008, 'generator_lr': 0.002, 'discriminator_lr': 0.0002, 'info_lr': 1e-05,             'mode_lr': 0.0008, 'disentanglement_lr': 0}, 'model': {'hidden_size': 3000, 'encoder_dropout': 0.2}, 'training':               {'use_mutual_info': False, 'use_mode_decoder': False, 'use_disentanglement': True, 'use_adam_optimization': True,            'use_adversarial_categorial_weights': True, 'lambda_z_l2_regularization': 0.15}}
         current epoch:: [ ===================  ] 99.79%
@@ -55,10 +54,6 @@ Shahar Azulay
         >>> train_unsupervised --dir-path <path-to-data-dir> --n-epochs 35 --z-size 2 --n-classes 10 --batch-size 100
         loading data started...
         dataset size in use: 3000 [labeled trainset]  47000 [un-labeled trainset]  10000 [validation]
-
-        using configuration:
-         {'learning_rates': {'auto_encoder_lr': 0.0008, 'generator_lr': 0.002, 'discriminator_lr': 0.0002, 'info_lr': 1e-05,             'mode_lr': 0.0008, 'disentanglement_lr': 0}, 'model': {'hidden_size': 3000, 'encoder_dropout': 0.2}, 'training':               {'use_mutual_info': False, 'use_mode_decoder': False, 'use_disentanglement': True, 'use_adam_optimization': True,            'use_adversarial_categorial_weights': True, 'lambda_z_l2_regularization': 0.15}}
-        current epoch:: [ ===================  ] 99.79%
         ...
         
    Visualize a trained model using pre-defined visualizations
@@ -66,7 +61,6 @@ Shahar Azulay
         >>> generate_model_visualization --dir-path <path-to-data-dir> --model-dir-path {<path-to-model-dir> --mode unsupervised --n-classes 10 --z-size 5
         loading data started...
         dataset size in use: 3000 [labeled trainset]  47000 [un-labeled trainset]  10000 [validation]
-    
         Label 1: 40.2%, Best matching label; 20
         Label 2: 41.9%, Best matching label; 14
         Label 3: 33.0%, Best matching label; 4
@@ -76,6 +70,5 @@ Shahar Azulay
         Label 7: 48.6%, Best matching label; 6
         Label 8: 47.6%, Best matching label; 0
         Label 9: 40.1%, Best matching label; 22
- 
         ACCURACY: 0.85%
         ...
