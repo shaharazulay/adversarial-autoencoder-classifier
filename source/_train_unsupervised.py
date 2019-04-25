@@ -213,7 +213,7 @@ def _get_optimizers(models, config_dict, decay=1.0):
 
     info_optim = optim.Adam(itertools.chain(Q.parameters(), P.parameters()), lr=info_lr)
     mode_optim = optim.Adam(itertools.chain(Q.parameters(), P_mode_decoder.parameters()), lr=mode_lr)
-    disentanglement_optim = optim.Adam(Q.parameters(), lr=disentanglement_lr)
+    disentanglement_optim = optim.Adam(itertools.chain(Q.parameters(), P_mode_decoder.parameters()), lr=disentanglement_lr)
     
     if not config_dict['training']['use_adam_optimization']:
         auto_encoder_optim = optim.SGD(itertools.chain(Q.parameters(), P.parameters()), lr=0.01 * decay, momentum=0.9)
