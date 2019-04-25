@@ -108,7 +108,7 @@ def _train_epoch(
             latent_z_all_zeros = Variable(torch.zeros(z_dim))
             
             for label_A in range(n_classes):
-                latent_y_A = get_categorial(label_A)
+                latent_y_A = get_categorial(label_A, n_classes=n_classes)
             
                 latent_vec_A = torch.cat((latent_y_A, latent_z_all_zeros), 0)
                 if cuda:
@@ -116,7 +116,7 @@ def _train_epoch(
                 X_mode_rec_A = P(latent_vec_A)
             
                 for label_B in range(label_A + 1, n_classes):
-                    latent_y_B = get_categorial(label_B)
+                    latent_y_B = get_categorial(label_B, n_classes=n_classes)
             
                     latent_vec_B = torch.cat((latent_y_B, latent_z_all_zeros), 0)
                     if cuda:
