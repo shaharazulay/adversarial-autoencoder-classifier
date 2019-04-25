@@ -2,18 +2,18 @@
 unsupervised:
   learning_rates:
     auto_encoder_lr: 0.0008
-    generator_lr: 0.004 #0.002
+    generator_lr: 0.002
     discriminator_lr: 0.0002
     info_lr: 0.00001
     mode_lr: 0.0008
-    disentanglement_lr: 0.0001
+    disentanglement_lr: 0.00001
   model:
     hidden_size: 3000
     encoder_dropout: 0.2
   training:
     use_mutual_info: False
     use_mode_decoder: False
-    use_disentanglement: False
+    use_disentanglement: True
     use_adam_optimization: True
     lambda_z_l2_regularization: 0.15
 
