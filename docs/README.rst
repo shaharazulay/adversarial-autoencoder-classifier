@@ -35,11 +35,11 @@ Shahar Azulay
    
         >>> python setup.py install --user
         
-  Initializing the Datasets
+  **Initialize the Datasets**
         
         >>> init_datasets --dir-path <path-to-data-dir>
 
-  Train a new AAE in an Semi-Supervised setting
+  **Train a new AAE in an Semi-Supervised setting**
   
         >>> train_semi_supervised --dir-path <path-to-data-dir> --n-epochs 35 --z-size 2 --n-classes 10 --batch-size 100
         loading data started...
@@ -51,14 +51,14 @@ Shahar Azulay
   
   .. image:: _static/unsupervised_advesarial_learning_curve.png
   
-  Train a new AAE in a Fully Unsupervised setting
+  **Train a new AAE in a Fully Unsupervised setting**
 
         >>> train_unsupervised --dir-path <path-to-data-dir> --n-epochs 35 --z-size 2 --n-classes 10 --batch-size 100
         loading data started...
         dataset size in use: 3000 [labeled trainset]  47000 [un-labeled trainset]  10000 [validation]
         ...
         
-  Visualize a trained model using pre-defined visualizations
+  **Visualize a trained model using pre-defined visualizations**
 
         >>> generate_model_visualization --dir-path <path-to-data-dir> --model-dir-path {<path-to-model-dir> --mode unsupervised --n-classes 10 --z-size 5
         loading data started...
