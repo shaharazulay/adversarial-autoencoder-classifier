@@ -101,31 +101,31 @@ def _train_epoch(
         #######################
         # Mode disentanglement phase
         #######################
-        mode_disentanglement_loss = torch.Tensor(0)
+        mode_disentanglement_loss = 0
+            
+        latent_z_all_zeros = Variable(torch.zeros(z_dim))
+        
+        for label_A in range(n_classes):
+            latent_y_A = get_categorial(label_A, n_classes=n_classes)
+        
+            latent_vec_A = torch.cat((latent_y_A, latent_z_all_zeros), 0)
+            if cuda:
+                latent_vec_A = latent_vec_A.cuda()
+            X_mode_rec_A = P(latent_vec_A)
+        
+            for label_B in range(label_A + 1, n_classes):
+                latent_y_B = get_categorial(label_B, n_classes=n_classes)
+        
+                latent_vec_B = torch.cat((latent_y_B, latent_z_all_zeros), 0)
+                if cuda:
+                    latent_vec_B = latent_vec_B.cuda()
+                X_mode_rec_B = P(latent_vec_B)
+        
+                mode_disentanglement_loss += -F.binary_cross_entropy(X_mode_rec_A + epsilon, X_mode_rec_B.detach() + epsilon)
+        
+        mode_disentanglement_loss /= (n_classes * (n_classes - 1) / 2)
         
         if params['use_disentanglement']:
-            
-            latent_z_all_zeros = Variable(torch.zeros(z_dim))
-            
-            for label_A in range(n_classes):
-                latent_y_A = get_categorial(label_A, n_classes=n_classes)
-            
-                latent_vec_A = torch.cat((latent_y_A, latent_z_all_zeros), 0)
-                if cuda:
-                    latent_vec_A = latent_vec_A.cuda()
-                X_mode_rec_A = P(latent_vec_A)
-            
-                for label_B in range(label_A + 1, n_classes):
-                    latent_y_B = get_categorial(label_B, n_classes=n_classes)
-            
-                    latent_vec_B = torch.cat((latent_y_B, latent_z_all_zeros), 0)
-                    if cuda:
-                        latent_vec_B = latent_vec_B.cuda()
-                    X_mode_rec_B = P(latent_vec_B)
-            
-                    mode_disentanglement_loss += -F.binary_cross_entropy(X_mode_rec_A + epsilon, X_mode_rec_B.detach() + epsilon)
-            
-            mode_disentanglement_loss /= (n_classes * (n_classes - 1) / 2)
             mode_disentanglement_loss.backward()
             disentanglement_optim.step()
         
