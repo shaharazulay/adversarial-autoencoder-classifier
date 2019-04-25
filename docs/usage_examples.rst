@@ -42,3 +42,6 @@ As a result the following files will be created inside the model directory under
 1. **Decoder / Encoder networks** the Encoder-Decoder networks (Q, P) will be stored for future use and analysis under *decoder_unsupervised* and *encoder_unsupervised*
 2. **Mode Decoder network** (if chosen in the configuration) responsible for the reconstruction of the image based on the categorial latent y, will be stored under *mode_decoder_unsupervised*
 3. **Learning curves** as *png* images, describing the adversarial, reconstruction and mutual information learning curves.     
+
+Hyperparmeter configuration
+-----
