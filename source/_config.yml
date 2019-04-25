@@ -11,7 +11,7 @@ unsupervised:
     hidden_size: 3000
     encoder_dropout: 0.2
   training:
-    use_mutual_info: True
+    use_mutual_info: False
     use_mode_decoder: False
     use_disentanglement: True
     use_adam_optimization: True
