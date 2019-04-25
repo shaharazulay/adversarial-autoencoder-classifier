@@ -101,7 +101,7 @@ def _train_epoch(
         #######################
         # Mode disentanglement phase
         #######################
-        mode_disentanglement_loss = 0
+        mode_disentanglement_loss = torch.Tensor(0)
         
         if params['use_disentanglement']:
             
