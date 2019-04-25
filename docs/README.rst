@@ -28,53 +28,54 @@ Shahar Azulay
 
 *[1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2*
 
-*Inspired by: https://github.com/fducau/AAE_pytorch*
 
 **Usage Examples:**
 
-  Create a traceable dictionary 
+  Install the module
    
-        >>> from traceable_dict import TraceableDict
-        >>> d1 = {'old_key': 'old_value'}
-        >>> D1 = TraceableDict(d1)
-        >>> D1
-        {'old_key': 'old_value', '__trace__': {}, '__revisions__': []}
-        >>> D1.revisions
-        []
+        >>> python setup.py install --user
         
-  Commit the dictionary for the first time
+  Initializing the Datasets
         
-        >>> D1.has_uncommitted_changes
-        True
-        >>>
-        >>> D1.commit(revision=1)
-        >>> D1
-        {'old_key': 'old_value', '__trace__': {}, '__revisions__': [1]}
-        >>> D1.revisions
-        [1]
-        >>> D1.has_uncommitted_changes
-        False
-        
-  Update the dictionary while tracing the changes
+        >>> init_datasets --dir-path <path-to-data-dir>
+
+  Train a new AAE in an Semi-Supervised setting
   
-        >>> D1['new_key'] = 'new_value'
-        >>> D1.trace
-        {'_uncommitted_': [(('_root_', 'new_key'), None, '__a__')]}
-        >>> D1.has_uncommitted_changes
-        True
-        >>> D1.commit(revision=2)
-        >>> D1.trace
-        {'2': [(('_root_', 'new_key'), None, '__a__')]}
-        >>> D1.has_uncommitted_changes
-        False
-        >>> D1.revisions
-        [1, 2]
+        >>> train_semi_supervised --dir-path <path-to-data-dir> --n-epochs 35 --z-size 2 --n-classes 10 --batch-size 100
+        loading data started...
+        dataset size in use: 3000 [labeled trainset]  47000 [un-labeled trainset]  10000 [validation]
 
-  Checkout previous revisions
+        using configuration:
+         {'learning_rates': {'auto_encoder_lr': 0.0008, 'generator_lr': 0.002, 'discriminator_lr': 0.0002, 'info_lr': 1e-05,             'mode_lr': 0.0008, 'disentanglement_lr': 0}, 'model': {'hidden_size': 3000, 'encoder_dropout': 0.2}, 'training':               {'use_mutual_info': False, 'use_mode_decoder': False, 'use_disentanglement': True, 'use_adam_optimization': True,            'use_adversarial_categorial_weights': True, 'lambda_z_l2_regularization': 0.15}}
+        current epoch:: [ ===================  ] 99.79%
+        ...
+        
+  Train a new AAE in a Fully Unsupervised setting
 
-        >>> D1.as_dict()
-        {'old_key': 'old_value', 'new_key': 'new_value'}
-        >>>
-        >>> D_original = D1.checkout(revision=1)
-        >>> D_original.as_dict()
-        {'old_key': 'old_value'}
+        >>> train_unsupervised --dir-path <path-to-data-dir> --n-epochs 35 --z-size 2 --n-classes 10 --batch-size 100
+        loading data started...
+        dataset size in use: 3000 [labeled trainset]  47000 [un-labeled trainset]  10000 [validation]
+
+        using configuration:
+         {'learning_rates': {'auto_encoder_lr': 0.0008, 'generator_lr': 0.002, 'discriminator_lr': 0.0002, 'info_lr': 1e-05,             'mode_lr': 0.0008, 'disentanglement_lr': 0}, 'model': {'hidden_size': 3000, 'encoder_dropout': 0.2}, 'training':               {'use_mutual_info': False, 'use_mode_decoder': False, 'use_disentanglement': True, 'use_adam_optimization': True,            'use_adversarial_categorial_weights': True, 'lambda_z_l2_regularization': 0.15}}
+        current epoch:: [ ===================  ] 99.79%
+        ...
+        
+   Visualize a trained model using pre-defined visualizations
+
+        >>> generate_model_visualization --dir-path <path-to-data-dir> --model-dir-path {<path-to-model-dir> --mode unsupervised --n-classes 10 --z-size 5
+        loading data started...
+        dataset size in use: 3000 [labeled trainset]  47000 [un-labeled trainset]  10000 [validation]
+    
+        Label 1: 40.2%, Best matching label; 20
+        Label 2: 41.9%, Best matching label; 14
+        Label 3: 33.0%, Best matching label; 4
+        Label 4: 41.1%, Best matching label; 2
+        Label 5: 53.8%, Best matching label; 11
+        Label 6: 44.3%, Best matching label; 26
+        Label 7: 48.6%, Best matching label; 6
+        Label 8: 47.6%, Best matching label; 0
+        Label 9: 40.1%, Best matching label; 22
+ 
+        ACCURACY: 0.85%
+        ...
