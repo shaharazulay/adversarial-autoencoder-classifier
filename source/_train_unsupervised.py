@@ -186,6 +186,7 @@ def _train_epoch(
 
         # report progress
         report_progress(float(batch_num) / n_batches)
+        print(mode_disentanglement_loss)####
         
     return D_loss_cat, D_loss_gauss, G_loss, recon_loss, mode_recon_loss, mutual_info_loss, mode_disentanglement_loss
 
@@ -280,8 +281,6 @@ def train(train_unlabeled_loader, valid_loader, epochs, n_classes, z_dim, output
             config_dict)
 
         learning_curve.append(all_losses)
-
-        #weights = get_unsupervised_boosting_weights(Q, P, train_unlabeled_loader, valid_loader)
         
         if epoch % 1 == 0:
             val_acc = unsupervised_classification_accuracy(Q, valid_loader, n_classes=n_classes)
