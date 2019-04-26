@@ -30,7 +30,11 @@ To try and improve the style-label mixture inside the generated clusters another
 
 **The general schema for semi-supervised learning can be seen here:**
 
-.. image:: _static/semi_supervised_schema.png
+.. image:: _static/info_loss.png
+
+.. image:: _static/reversed_pairwise_loss.png
+
+.. image:: _static/mode_decoder_loss.png
 
 Unsupervised classification accuracy metric
 -----
