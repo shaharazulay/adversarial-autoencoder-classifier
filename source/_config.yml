@@ -1,12 +1,12 @@
 # unsupervised learning configurations
 unsupervised:
   learning_rates:
-    auto_encoder_lr: 0.0007 #0.0008
+    auto_encoder_lr: 0.0008
     generator_lr: 0.002
     discriminator_lr: 0.0002
     info_lr: 0.00001
     mode_lr: 0.0008
-    disentanglement_lr: 0.001 #0.000005
+    disentanglement_lr: 0.000005
   model:
     hidden_size: 3000
     encoder_dropout: 0.2
