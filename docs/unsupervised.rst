@@ -28,7 +28,7 @@ Integrating another Decoder (Figure 2) called the Mode-Decoder into the training
 To try and improve the style-label mixture inside the generated clusters another method was attempted and it was to integrate reversed pairwise mode loss (Figure 15) - that will push the Decoder to create “modes” which are as far apart from one another as possible.
 
 
-**The general schema for semi-supervised learning can be seen here:**
+**The added componenets to the unsupervised training can be seen here:**
 
 .. image:: _static/info_loss.png
 
@@ -55,63 +55,20 @@ Then the output label “3” will be assigned to the best matching MNIST label 
 Latent space disentangelment
 -----
 
-The training process is divided into three major parts:
+The end goal of the unsupervised training is the hard task of separating style and label.
+The latent z part create by the Encoder is supposed to take on pure style, allowing the y latent part to represent the pure label.
 
-1. **Auto Encoding (reconstruction)** where the Encoder-Decoder networks (Q, P) learns to encode and reconstruct the image.
-2. **Adversarial** where the encoder learns how to produce latent features y which are categorical and z which are normally distirbuted.
-3. **Semi-supervised** where the encoder learns to predict the right label for a pre-known labeled image.
+This task is clearly hard since labels are in many cases more "cultural" than actually represented in the data itself.
 
-The success of the training process can be measured based on two grounds:
+To analyze the ability of the AAE to cluster the data into pure separate labels a latent space visualization is a good place to start.
+It allows for two things:
 
-**Validation accuracy** on a held out labeled validation set.
-The results of the semi-supervised model reached **97% accuracy**, which shows good performance and that the model learns the labeled part properly.
+1. **Clusteting potential assessment** We can assess if the AAE can even cluster efficiently into separate classes using the latent space.
+2. **Style-label mixture assessment** Allowing us to see which labels mix together and which don't.
 
-.. image:: _static/semi_supervised_samples_from_all_lables.png
+The latent space visualization is an important tool in this unsupervised learning.
 
-*each column representing a predicted label for the original displayed images, showing the high accuracy of the model*
-  
-**Visual reconstruction** 
-Here we can see from visual examples that the reconstruction of an image (using the encoding-decoding pipeline) works pretty well. The reconstructed image is slightly blurry, which might be corrected with a slightly different loss function.
-
-.. image:: _static/semi_supervised_reconstruction_1.png
-
-*an example reconstruction of an original "0" digit image*
-
-In order to analyise the success of the adversarial part (which is focused on the latent features) we can examine the learning curve, showing the loss of the generator, and descriminator networks:
-
-.. image:: _static/semi_supervised_advesarial_learning_curve.png
-
-*the adversarial learning curve, showing the balance which is created between generator and discriminators*
-
-The Latent Features
------
-
-The adverserial training pushes the latent features to the desired distribution. The latent y part learns to behave similarly to a categorial distribution, whlie the latent z part learns to distribute as a zero-centered normal.
-
-First, we can see that the latent features were trained properly, using the adversarial balance.
-
-.. image:: _static/semi_supervised_latent_z_distribution.png
-
-*the empricial distribution of the first dimension in the latent z vector, showing that the learned feature is indeed normally distributed around zero.*
-
-
-.. image:: _static/semi_supervised_latent_y_example.png
-
-*an empricial example of the value of the latent y vector, showing that the learned feature is indeed categorial, showing close to "1" only near the predicted label.*
-
-
-Next we would like to find out if the latent features really perform as expected.
-The latent y vector is trained to learn the label, or "mode" of the input. We want it to describe the actual digit inside the input, and the semi-supervised procedure helps us reach that target.
-
-The latent z vector is expected to represent "style", and capture the deeper style of writing of a specific input digit.
-Again, this happens only thanks to the semi-supervision of known labels, pushing the latent y to capture what is neccesary to describe the type of digit.
-
-Here's a simple visualization of the meaning of the latent features:
-
-.. image:: _static/semi_supervised_latent_features.png
-
-*each row represents a specific latent y value (out of the categorial distribution), and along that row the first dimension of the latent z vector is sampled uniformly from the normal distribution.
-One can see that indeed, the latent y completely catches the label, while the latent z controls the style and shape of the digit.*
+.. image:: _static/latent_features_tnse.png
 
 *[1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2*
 *[2] X.Chen, Y.Duan, R.Houthooft, J.Schulman, I.Sutskever, P.Abbeel: InfoGAN: Interpretable Representation Learning by Information Maximizing Generative Adversarial Nets, 2016, arXiv:1606.03657v1*
