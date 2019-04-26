@@ -18,7 +18,7 @@
 .. toctree::
    :caption: Unsupervised Learning
    
-   semi_supervised
+   unsupervised
    
 .. toctree::
    :caption: Use Examples

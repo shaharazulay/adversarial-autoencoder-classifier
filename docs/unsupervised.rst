@@ -1,5 +1,5 @@
 *****
-Semi Supervised Classification with Advesarial Auto Encoders
+Fully Unsupervised Classification with Advesarial Auto Encoders
 *****
 
 
@@ -8,31 +8,43 @@ General Concept
 
 In the concept described in [1], AAE can be submitted to semi-supervised learning, training them to predict the correct label using their latent feature representation, and based on a semi-supervised training set.
 
-As described in the overview of this project, the adversarial autoencoder contains a simple AE at its center.
-The training method for semi-supervised learning exploits the generative description of the unlabeled data
-to improve the classification performance that would be obtained by using only the labeled data.
+Training the the network in a fully unsupervised manner requires deeper analysis and handling.
 
-As in many cases, unlabeled data is more abundant and accessible. Using it as part of the adversarial AE learning, will help the encoding improve, alongside it producing better labeling.
+In order to create a better disentanglement in the AAE’s latent space the following methods were tested:
+1. **Cyclic mode loss**
+The use of a cyclic mode loss (Figure 1) - that will measure the mutual information between the latent space after the Encoder and the one after another cycle of Decode-Encoder.
+Minimizing this loss should push the Encoder and Decoder to use the latent space in a consistent fashion.
+The cyclic loss is implemented in a similar idea to the one suggested in InfoGAN[2].
+2. **L2 regularization on latent z**
+Limiting the use of the z part of the latent space using L2 loss regularization over z.
+Minimizing this loss can assist in pushing more information into the y part when possible, and possibly allow better disentanglement in the latent space.ֿ
+3. **Mode reconstruction loss**
+Integrating another Decoder (Figure 2) called the Mode-Decoder into the training process, which is trained to learn the “mode” of the image, therefore forcing the Encoder to use the y latent space in a meaningful way.
+4. **reversed pairwise mode loss**
+To try and improve the style-label mixture inside the generated clusters another method was attempted and it was to integrate reversed pairwise mode loss (Figure 15) - that will push the Decoder to create “modes” which are as far apart from one another as possible.
+
 
 **The general schema for semi-supervised learning can be seen here:**
 
 .. image:: _static/semi_supervised_schema.png
 
-Inference and Perfomance Estimation
+Unsupervised classification accuracy metric
 -----
 
-The basic schema follows the exact implementation of the AAE, with the only difference of introducing a labeled image from time to time into the training process.
-The labeled image is treated differently and is measured using a new Cross Entropy loss again the known target label.
-This loss only effect the Encoder (Q) - causing it to learn how to predict the labled images currectly over the latent y categorical part.
+Before diving into the unsupervised setting, a metric of accuracy performance needs to be agreed upon.
+In the fully unsupervised scenario the model has no input on the real “cultural” labels stored in the validation set.  Meaning it can be a perfect classifier, and label all “0” digits together, all “1” digits together and so on, but label each group under the “wrong” cultural label (for example labeling all “0” digits under the label “8”).
 
-Followed the training process, the semi-supervised AAE is in fact a classifier as any other. 
-The inference is performed using the decoder alone (Q) and observing the latent y part of the latent features, which can provide the predicted label for a new unseen input image.
+Inspired by a metric commonly used for clustering accuracy, the chosen metric used in the following parts of this paper will be referred to as unsupervised classification accuracy.
 
-.. image:: _static/adversarial_autoencoder_inference.png
+The metric was measured after the training of an AAE model (and during for debugging purposes only) and it follows the following logic - 
+The trained model was used to predict the labels of the entire validation set.
+Each possible output label of the AAE was assigned a true MNIST label using the highest appearing MNIST label classified under this output label.
+Accuracy is determined by counting the percentage [%] of validation samples that are classified in an output label that was assigned to their true MNIST label.
 
-This is how the model is tested and validated, using the inference process over a pre-known validation set.
+For example, let’s say the AAE is built using 10 possible output labels (the latent y is of size 10), and under label “3” (post-training) a 1000 samples (out of the 10K validation set samples) were classified, and 75% of those samples where the MNIST digit “4” and 25% the MNIST digit “6”.
+Then the output label “3” will be assigned to the best matching MNIST label - “4”, and all the “6” digits classified under it will be considered a misclassification. 
 
-The Training Process
+Latent space disentangelment
 -----
 
 The training process is divided into three major parts:
@@ -94,3 +106,4 @@ Here's a simple visualization of the meaning of the latent features:
 One can see that indeed, the latent y completely catches the label, while the latent z controls the style and shape of the digit.*
 
 *[1] A.Makhzani,  J.Shlens, N.Jaitly, I.Goodfellow, B.Frey: Adversarial Autoencoders, 2016, arXiv:1511.05644v2*
+*[2] X.Chen, Y.Duan, R.Houthooft, J.Schulman, I.Sutskever, P.Abbeel: InfoGAN: Interpretable Representation Learning by Information Maximizing Generative Adversarial Nets, 2016, arXiv:1606.03657v1*
