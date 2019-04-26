@@ -11,6 +11,7 @@ In the concept described in [1], AAE can be submitted to semi-supervised learnin
 Training the the network in a fully unsupervised manner requires deeper analysis and handling.
 
 In order to create a better disentanglement in the AAE’s latent space the following methods were tested:
+
 1. **Cyclic mode loss**
 The use of a cyclic mode loss (Figure 1) - that will measure the mutual information between the latent space after the Encoder and the one after another cycle of Decode-Encoder.
 Minimizing this loss should push the Encoder and Decoder to use the latent space in a consistent fashion.
