@@ -16,11 +16,14 @@ In order to create a better disentanglement in the AAE’s latent space the foll
 The use of a cyclic mode loss (Figure 1) - that will measure the mutual information between the latent space after the Encoder and the one after another cycle of Decode-Encoder.
 Minimizing this loss should push the Encoder and Decoder to use the latent space in a consistent fashion.
 The cyclic loss is implemented in a similar idea to the one suggested in InfoGAN[2].
+
 2. **L2 regularization on latent z**
 Limiting the use of the z part of the latent space using L2 loss regularization over z.
 Minimizing this loss can assist in pushing more information into the y part when possible, and possibly allow better disentanglement in the latent space.ֿ
+
 3. **Mode reconstruction loss**
 Integrating another Decoder (Figure 2) called the Mode-Decoder into the training process, which is trained to learn the “mode” of the image, therefore forcing the Encoder to use the y latent space in a meaningful way.
+
 4. **reversed pairwise mode loss**
 To try and improve the style-label mixture inside the generated clusters another method was attempted and it was to integrate reversed pairwise mode loss (Figure 15) - that will push the Decoder to create “modes” which are as far apart from one another as possible.
 
